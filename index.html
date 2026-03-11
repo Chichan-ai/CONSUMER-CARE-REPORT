@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumer Care Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .sidebar-link.active { background-color: #2563eb; border-left: 4px solid #fff; }
+        .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+<div class="flex h-screen overflow-hidden">
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-xl">
+        <div class="p-6 text-2xl font-bold border-b border-slate-800 text-blue-400 tracking-tight">CareCenter</div>
+        <nav class="flex-1 p-4 space-y-2 text-sm font-semibold">
+            <button onclick="showPage('dashboard')" id="nav-dashboard" class="sidebar-link active w-full text-left p-3 rounded-lg hover:bg-slate-800 transition">Dashboard</button>
+            <button onclick="showPage('summary')" id="nav-summary" class="sidebar-link w-full text-left p-3 rounded-lg hover:bg-slate-800 transition">Summary Report</button>
+            <button onclick="showPage('report')" id="nav-report" class="sidebar-link w-full text-left p-3 rounded-lg hover:bg-slate-800 transition">New Report</button>
+        </nav>
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">v2.0 Beta</div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-8">
+        
+        <section id="page-dashboard" class="space-y-8">
+            <header class="flex justify-between items-end">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800">Operational Overview</h1>
+                    <p class="text-slate-500">Real-time ticket performance and metrics.</p>
+                </div>
+                <div id="loading-state" class="text-blue-600 text-sm font-bold flex items-center hidden">
+                    <svg class="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Syncing Sheets...
+                </div>
+            </header>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border-b-4 border-blue-500">
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Tickets</p>
+                    <p id="stat-total" class="text-4xl font-extrabold mt-1">0</p>
+                </div>
+                <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border-b-4 border-emerald-500">
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Resolved</p>
+                    <p id="stat-resolved" class="text-4xl font-extrabold mt-1 text-emerald-600">0</p>
+                </div>
+                <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border-b-4 border-amber-500">
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Pending</p>
+                    <div class="flex items-baseline justify-between">
+                        <p id="stat-pending" class="text-4xl font-extrabold mt-1 text-amber-600">0</p>
+                        <button onclick="openFilteredSheet()" class="text-xs text-blue-600 font-semibold hover:underline cursor-pointer">View GSheet ↗</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-lg font-bold mb-6 text-slate-700">Ticket Volume by Category</h2>
+                    <div class="relative h-[350px]">
+                        <canvas id="ticketChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <h2 class="text-lg font-bold mb-6 text-slate-700">Recent Activity</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-100 uppercase text-[10px] font-bold tracking-widest">
+                                    <th class="pb-4">Ticket</th>
+                                    <th class="pb-4">Customer</th>
+                                    <th class="pb-4">Branch</th>
+                                    <th class="pb-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="daily-report-body" class="divide-y divide-slate-50">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-summary" class="hidden">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-slate-800">CS Daily Summary</h1>
+                <p class="text-slate-500">Channel Comparison (MA vs Kiosk)</p>
+            </div>
+            <div class="bg-emerald-800 text-white rounded-2xl shadow-xl max-w-4xl overflow-hidden">
+                <div class="p-8 bg-emerald-900/20 flex justify-between items-center border-b border-emerald-700">
+                    <div>
+                        <h2 class="text-xl font-bold uppercase tracking-widest">Performance Metrics</h2>
+                        <p class="text-emerald-200 text-xs mt-1">Refreshed: <span id="summary-date-display">--</span></p>
+                    </div>
+                    <div id="summary-date" class="bg-emerald-900/50 px-5 py-2 rounded-xl font-mono text-xl border border-emerald-600/50"></div>
+                </div>
+                <div class="grid grid-cols-3 bg-emerald-900/40 text-[10px] font-black uppercase tracking-widest p-4 text-center border-b border-emerald-700">
+                    <div class="text-left pl-4">Metric</div>
+                    <div>MA Channel</div>
+                    <div>Kiosk Channel</div>
+                </div>
+                <div class="divide-y divide-emerald-700/50">
+                    <div class="grid grid-cols-3 p-6 text-center items-center hover:bg-emerald-600/20 transition">
+                        <div class="text-left pl-4 font-semibold text-emerald-100">Daily Total (FTD)</div>
+                        <div id="ftd-ma" class="text-3xl font-bold">0</div>
+                        <div id="ftd-kiosk" class="text-3xl font-bold">0</div>
+                    </div>
+                    <div class="grid grid-cols-3 p-6 text-center items-center bg-white/5 hover:bg-emerald-600/20 transition">
+                        <div class="text-left pl-4 font-semibold text-emerald-100">Monthly Total</div>
+                        <div id="mt-ma" class="text-3xl font-bold text-amber-300">0</div>
+                        <div id="mt-kiosk" class="text-3xl font-bold text-amber-300">0</div>
+                    </div>
+                    <div class="grid grid-cols-3 p-6 text-center items-center hover:bg-emerald-600/20 transition">
+                        <div class="text-left pl-4 font-semibold text-emerald-100">Resolved Total</div>
+                        <div id="res-ma" class="text-3xl font-bold text-emerald-400">0</div>
+                        <div id="res-kiosk" class="text-3xl font-bold text-emerald-400">0</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-report" class="hidden">
+            <div class="max-w-5xl bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-4">New Entry</h2>
+                
+                <form id="ticketForm" class="space-y-8">
+                    <div>
+                        <h3 class="text-blue-600 font-bold uppercase text-xs mb-4 tracking-wider">Tracking Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Ticket No.</label>
+                                <input type="text" id="ticketNoInput" name="ticketNo" class="w-full border p-2 rounded outline-none focus:border-blue-500" required>
+                                <p class="text-xs text-gray-500 mt-1">Last ticket: <span id="last-ticket-hint" class="font-bold text-blue-600">...</span></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Ticket Tagging</label>
+                                <input type="text" name="ticketTagging" class="w-full border p-2 rounded outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Date Issued</label>
+                                <input type="date" name="dateIssued" id="dateIssuedInput" class="w-full border p-2 rounded outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Date Picked Up</label>
+                                <input type="date" name="datePickedUp" class="w-full border p-2 rounded outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Date Replied</label>
+                                <input type="date" name="dateReplied" class="w-full border p-2 rounded outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Status</label>
+                                <select name="status" class="w-full border p-2 rounded bg-white">
+                                    <option>Pending</option>
+                                    <option>Resolved</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-blue-600 font-bold uppercase text-xs mb-4 tracking-wider">Customer & Location</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Customer Name</label>
+                                <input type="text" name="name" class="w-full border p-2 rounded outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Branch</label>
+                                <select name="branch" class="w-full border p-2 rounded outline-none">
+                                    <option value="">Select Branch</option>
+                                    <option>BACOLOD</option><option>BACLARAN</option><option>BALER</option>
+                                    <option>BALIWAG</option><option>BAMBANG</option><option>BANTAY</option>
+                                    <option>BULAN</option><option>CABANATUAN</option><option>CAINTA</option>
+                                    <option>CALAMBA</option><option>CALAPAN</option><option>CAUAYAN</option>
+                                    <option>DAET</option><option>DAVAO</option><option>GENERAL SANTOS</option>
+                                    <option>GUIMBA</option><option>ILOILO</option><option>KAWIT</option>
+                                    <option>KORONADAL</option><option>LEGAZPI</option><option>LIPA</option>
+                                    <option>LUCENA</option><option>MADDELA</option><option>MANDAUE</option>
+                                    <option>MANSALAY</option><option>MASBATE</option><option>MUNTINLUPA</option>
+                                    <option>NAGA</option><option>ODIONGAN</option><option>ORTIGAS CENTER, PASIG</option>
+                                    <option>PUERTO PRINCESA</option><option>ROXAS</option><option>SAN FERNANDO, LA UNION</option>
+                                    <option>SAN JACINTO</option><option>SAN JOSE, NUEVA ECIJA</option><option>SAN JOSE, OCC. MINDORO</option>
+                                    <option>SANTIAGO</option><option>SOLANO</option><option>SORSOGON</option>
+                                    <option>TABACO</option><option>TAGAYTAY</option><option>TAGBILARAN</option>
+                                    <option>TARLAC</option><option>TUGUEGARAO</option><option>URDANETA</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Channel</label>
+                                <select name="channel" class="w-full border p-2 rounded bg-white">
+                                    <option>HEIMDALL</option>
+                                    <option>EMAIL</option>
+                                    <option>CHATBOT</option>
+                                    <option>WALKIN</option>
+                                    <option>VIBER</option>
+                                    <option>MA</option>
+                                    <option>KIOSK</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-blue-600 font-bold uppercase text-xs mb-4 tracking-wider">Case Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Type of Ticket</label>
+                                <select name="type" class="w-full border p-2 rounded bg-white">
+                                    <option>Deposit concerns</option>
+                                    <option>Loan concerns</option>
+                                    <option>Log-in issues</option>
+                                    <option>Mobile app issues</option>
+                                    <option>SOA</option>
+                                    <option>Other concerns</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Engagement</label>
+                                <select name="engagement" class="w-full border p-2 rounded bg-white">
+                                    <option>CONCERN</option>
+                                    <option>REQUEST</option>
+                                    <option>QUERY</option>
+                                    <option>COMPLAINT</option>
+                                    <option>ISSUE</option>
+                                    <option>OTHERS</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold mb-1">Concerns</label>
+                                    <textarea name="concerns" class="w-full border p-2 rounded h-24 outline-none"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold mb-1">Assistance Provided</label>
+                                    <textarea name="assistance" class="w-full border p-2 rounded h-24 outline-none"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold mb-1">Action Taken</label>
+                                    <select name="action" class="w-full border p-2 rounded outline-none">
+                                      <option value="">Select Action</option>
+                                      <option>ACCOMMODATED</option>
+                                      <option>ENDORSED</option>
+                                      <option>ESCALATED</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-blue-700 transition shadow-lg">
+                        Submit Entry to Google Sheets
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6ZXz0UddMCzCNCA799LjdoY_p_g7LjCLYxc5mEWdEJbos930FzMLMoGU6ATTB6y3u/exec"; 
+    let myChart = null;
+
+    // Initialization
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('dateIssuedInput').value = today;
+    document.getElementById('summary-date').innerText = today;
+    document.getElementById('summary-date-display').innerText = new Date().toLocaleDateString();
+
+    function showPage(page) {
+        ['dashboard', 'summary', 'report'].forEach(p => {
+            document.getElementById(`page-${p}`).classList.add('hidden');
+            document.getElementById(`nav-${p}`).classList.remove('active');
+        });
+        document.getElementById(`page-${page}`).classList.remove('hidden');
+        document.getElementById(`nav-${page}`).classList.add('active');
+        if(page !== 'report') loadData();
+    }
+
+    async function loadData() {
+        const loadingEl = document.getElementById('loading-state');
+        loadingEl.classList.remove('hidden');
+        
+        try {
+            const response = await fetch(SCRIPT_URL);
+            const result = await response.json();
+            const { tickets: data, lastTicket: lastNum } = result;
+
+            document.getElementById('last-ticket-hint').innerText = lastNum || "0";
+            if (lastNum && !isNaN(lastNum)) {
+                document.getElementById('ticketNoInput').value = parseInt(lastNum) + 1;
+            }
+
+            // Summary Math
+            const todayStr = new Date().toISOString().split('T')[0];
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            const ma = data.filter(t => String(t.Channel).toUpperCase() === 'MA');
+            const kiosk = data.filter(t => String(t.Channel).toUpperCase() === 'KIOSK');
+
+            document.getElementById('ftd-ma').innerText = ma.filter(t => t.DateIssued.split('T')[0] === todayStr).length;
+            document.getElementById('ftd-kiosk').innerText = kiosk.filter(t => t.DateIssued.split('T')[0] === todayStr).length;
+
+            const isThisMonth = (t) => {
+                const d = new Date(t.DateIssued);
+                return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+            };
+            document.getElementById('mt-ma').innerText = ma.filter(isThisMonth).length;
+            document.getElementById('mt-kiosk').innerText = kiosk.filter(isThisMonth).length;
+
+            document.getElementById('res-ma').innerText = ma.filter(t => t.Status === 'Resolved').length;
+            document.getElementById('res-kiosk').innerText = kiosk.filter(t => t.Status === 'Resolved').length;
+
+            document.getElementById('stat-total').innerText = data.length;
+            document.getElementById('stat-resolved').innerText = data.filter(t => t.Status === 'Resolved').length;
+            document.getElementById('stat-pending').innerText = data.filter(t => t.Status === 'Pending').length;
+
+            // Populate Recent Activity
+            const reportBody = document.getElementById('daily-report-body');
+            reportBody.innerHTML = '';
+            data.slice(-8).reverse().forEach(t => {
+                const badge = t.Status === 'Resolved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700';
+                reportBody.innerHTML += `
+                    <tr>
+                        <td class="py-4 font-bold text-slate-700">#${t.TicketNo || '---'}</td>
+                        <td class="py-4 text-slate-600 font-medium">${t.Name || '---'}</td>
+                        <td class="py-4 text-slate-500">${t.Branch || '---'}</td>
+                        <td class="py-4"><span class="px-2 py-1 rounded-full text-[9px] font-bold ${badge}">${t.Status.toUpperCase()}</span></td>
+                    </tr>
+                `;
+            });
+
+            const counts = data.reduce((acc, t) => {
+                const type = t.Type || 'Other';
+                acc[type] = (acc[type] || 0) + 1;
+                return acc;
+            }, {});
+            updateChart(counts);
+
+        } catch (err) { console.error(err); } finally { loadingEl.classList.add('hidden'); }
+    }
+
+    function updateChart(counts) {
+        const ctx = document.getElementById('ticketChart').getContext('2d');
+        if (myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{
+                    label: 'Volume',
+                    data: Object.values(counts),
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 6,
+                    barThickness: 35
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+    }
+
+    document.getElementById('ticketForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const originalText = btn.innerText;
+        btn.innerText = "Syncing with Database...";
+        btn.disabled = true;
+
+        const formData = new FormData(e.target);
+        const params = new URLSearchParams(formData);
+
+        try {
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: params });
+            alert("Entry saved successfully!");
+            e.target.reset();
+            loadData();
+            showPage('dashboard');
+        } catch (error) { alert("Failed to sync. Check connection."); } 
+        finally { btn.innerText = originalText; btn.disabled = false; }
+    };
+
+    function openFilteredSheet() {
+        window.open("https://docs.google.com/spreadsheets/d/1mDv4lzB3qDy_e9OQ0mG6YA_49kPJ1Q53SCC1lGSy6Fs/edit", '_blank');
+    }
+
+    loadData();
+</script>
+</body>
+</html>
