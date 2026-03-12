@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;700;900&display=swap');
+        
+        :root {
+            --bg-onyx: #f8fafc;
+            --card-bg: #ffffff;
+            --neon-green: #059669;
+            --slate-grey: #94a3b8;
+            --text-main: #0f172a;
+            --border-glass: rgba(0, 0, 0, 0.1);
+            --grad-color: rgba(5, 150, 105, 0.1);
+        }
+        
+        /* Light Mode Overrides */
+        .dark-theme {  
+            /* CHANGE THIS COLOR TO CHANGE THE GRADIENT IN THE MIDDLE */
+            --grad-color: rgba(0, 255, 157, 0.15); 
+            --bg-onyx: #050505;
+            --card-bg: #0d0d0d;
+            --neon-green: #00ff9d;
+            --slate-grey: #1e293b;
+            --text-main: #e2e8f0;
+            --border-glass: rgba(255, 255, 255, 0.08);
+        }
+
+        
+       
+
+        body { 
+            background-color: var(--bg-onyx);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease;
+            /* Central Gradient Glow */
+            background-image: 
+                radial-gradient(circle at 50% 50%, var(--grad-color), transparent 60%),
+                radial-gradient(circle at 2px 2px, rgba(128, 128, 128, 0.05) 1px, transparent 0);
+            background-size: 100% 100%, 30px 30px;
+        }
+
+        .mono { font-family: 'Fira Code', monospace; }
+
+        .terminal-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .terminal-header {
+            background: rgba(128, 128, 128, 0.05);
+            padding: 10px 16px;
+            display: flex;
+            gap: 6px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--slate-grey); opacity: 0.5; }
+
+        .sidebar-link.active { 
+            color: var(--neon-green) !important;
+            background: rgba(0, 255, 157, 0.05);
+            border-right: 3px solid var(--neon-green);
+        }
+
+        input, select, textarea {
+            background: rgba(128, 128, 128, 0.05) !important;
+            border: 1px solid var(--border-glass) !important;
+            color: var(--text-main) !important;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--neon-green) !important;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.2);
+        }
+
+        .btn-cyber {
+            background: var(--neon-green);
+            color: #fff;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+        /* Fix for Sticky Header Background */
+        .sticky-header th {
+            position: sticky;
+            top: -1px; /* Slight offset to hide sub-pixel gaps */
+            background: var(--card-bg); /* Uses the theme's card color */
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle depth when scrolling */
+        }
+
+/* Ensure the table doesn't collapse */
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+        .btn-cyber:hover { transform: translateY(-1px); opacity: 0.9; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--slate-grey); border-radius: 10px; }

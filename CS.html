@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumer Care | Cyber-Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="C:\Users\Lenovo\OneDrive - AGRIBUSINESS RURAL BANK INC\Desktop\PRIVATE FILES\Getting Started\AI-Support Desk\style.css">
+</head>
+<body>
+    <div class="flex h-screen">
+        <aside class="w-64 border-r border-white/5 bg-black/20 backdrop-blur-md flex flex-col">
+            <div class="p-8 border-b border-white/5">
+                <div class="font-black tracking-tighter text-xl">
+                    CONSUMER<span class="text-[#00ff9d]">CARE</span>
+                </div>
+                <p class="text-[9px] mono opacity-50 mt-1">DIGITAL BANKING</p>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-2">
+                <button onclick="showPage('dashboard')" id="nav-dashboard" class="sidebar-link active w-full text-left p-3 rounded mono text-xs">DASHBOARD</button>
+                <button onclick="showPage('summary')" id="nav-summary" class="sidebar-link w-full text-left p-3 rounded mono text-xs">SUMMARY REPORT</button>
+                <button onclick="showPage('report')" id="nav-report" class="sidebar-link w-full text-left p-3 rounded mono text-xs">NEW ENTRY</button>
+            </nav>
+
+            <div class="p-4 border-t border-white/5 space-y-3">
+                <button onclick="toggleTheme()" class="w-full p-2 rounded border border-white/10 text-[10px] mono flex items-center justify-center gap-2 hover:bg-white/5">
+                    <span id="theme-icon">🌙</span> LIGHT/DARK
+                </button>
+                <div class="text-center text-[10px] mono opacity-30">AGRIBANK</div>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-8">
+        <section id="page-dashboard" class="space-y-8">
+                <header class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-black italic tracking-tighter">PERFORMANCE MONITOR</h1>
+                        <p class="text-slate-500 mono text-xs uppercase">CCS Daily Monitoring Module</p>
+                    </div>
+                    <div id="loading-state" class="hidden text-[#00ff9d] mono text-xs animate-pulse">
+                        [ Please wait... ]
+                    </div>
+                </header>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="terminal-box p-6 border-b-2 border-white/10">
+                        <p class="text-slate-500 text-[10px] mono mb-2">TOTAL TICKETS</p>
+                        <p id="stat-total" class="text-4xl font-black">0</p>
+                    </div>
+                    <div class="terminal-box p-6 border-b-2 border-[#00ff9d]">
+                        <p class="text-slate-500 text-[10px] mono mb-2">RESOLVED COUNT</p>
+                        <p id="stat-resolved" class="text-4xl font-black text-[#00ff9d]">0</p>
+                    </div>
+                    <div class="terminal-box p-6 border-b-2 border-orange-500">
+                        <div class="flex justify-between items-start">
+                            <p class="text-slate-500 text-[10px] mono mb-2">ACTIVE PENDING</p>
+                            <button onclick="openFilteredSheet()" class="text-[9px] text-[#00ff9d] underline mono">CLICK FOR PENDING</button>
+                        </div>
+                        <p id="stat-pending" class="text-4xl font-black">0</p>
+                    </div>
+                    <div class="terminal-box p-6 border-b-2 border-blue-500">
+                        <p class="text-slate-500 text-[10px] mono mb-2">AVG RESOLUTION TIME</p>
+                        <p id="stat-tat" class="text-4xl font-black text-blue-400">0h</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                    
+                    <div class="terminal-box">
+                        <div class="terminal-header"><div class="dot"></div><span class="text-[10px] mono opacity-50 ml-2">BRANCH</span></div>
+                        <div class="p-6 h-[400px]"><canvas id="branchChart"></canvas></div>
+                    </div>
+
+                    <div class="terminal-box flex flex-col h-[400px]">
+                        <div class="terminal-header flex justify-between items-center">
+                            <span class="text-[10px] mono opacity-50">DATABASE</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] mono opacity-40">SEARCH:</span>
+                                <input type="text" id="tableSearch" onkeyup="filterTable()" placeholder="NAME OR TICKET #..." class="bg-transparent border-none text-[10px] p-1 w-32 focus:w-48 transition-all focus:ring-0">
+                            </div>
+                        </div>
+                    <div class="overflow-y-auto p-4 flex-grow" style="max-height: 400px;">
+                            <table class="w-full text-left text-[11px] mono">
+                            <thead class="sticky-header">
+                                    <tr class="text-slate-500 border-b border-white/5 uppercase">
+                                        <th class="pb-4 pt-2 px-2 text-left">ID</th>
+                                        <th class="pb-4 pt-2 px-2 text-left">Client</th>
+                                        <th class="pb-4 pt-2 px-2 text-left">Branch</th>
+                                        <th class="pb-4 pt-2 px-2 text-left">Severity</th> <th class="pb-4 pt-2 px-2 text-right">Status</th>   </tr>
+                                </thead>
+                                <tbody id="daily-report-body" class="divide-y divide-white/5"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="terminal-box">
+                        <div class="terminal-header"><div class="dot"></div><span class="text-[10px] mono opacity-50 ml-2">TYPE OF ENGAGEMENT</span></div>
+                        <div class="p-6 h-[400px]"><canvas id="engagementChart"></canvas></div>
+                    </div>
+
+                    <div class="terminal-box">
+                        <div class="terminal-header"><div class="dot"></div><span class="text-[10px] mono opacity-50 ml-2">TYPE OR TICKET</span></div>
+                        <div class="p-6 h-[400px]"><canvas id="ticketChart"></canvas></div>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="page-summary" class="hidden space-y-8">
+                <h1 class="text-3xl font-black italic tracking-tighter">CS SUMMARY</h1>
+                <div class="terminal-box max-w-4xl">
+                    <div class="terminal-header"><span class="text-[10px] mono">Daily Report</span></div>
+                    <div class="p-0">
+                        <div class="grid grid-cols-3 bg-white/5 p-4 text-[10px] mono font-bold opacity-50 border-b border-white/5">
+                            <div>TICKET METRICS</div><div>MOBILE APP TICKET</div><div>KIOSK TICKET</div>
+                        </div>
+                        <div class="divide-y divide-white/5">
+                            <div class="grid grid-cols-3 p-8 items-center">
+                                <div class="mono text-xs opacity-60">DAILY FTD</div>
+                                <div id="ftd-ma" class="text-4xl font-black">0</div>
+                                <div id="ftd-kiosk" class="text-4xl font-black">0</div>
+                            </div>
+                            <div class="grid grid-cols-3 p-8 items-center bg-white/5">
+                                <div class="mono text-xs opacity-60">MONTHLY TOTAL</div>
+                                <div id="mt-ma" class="text-4xl font-black text-[#00ff9d]">0</div>
+                                <div id="mt-kiosk" class="text-4xl font-black text-[#00ff9d]">0</div>
+                            </div>
+                            <div class="grid grid-cols-3 p-8 items-center">
+                                <div class="mono text-xs opacity-60">RESOLVED</div>
+                                <div id="res-ma" class="text-4xl font-black opacity-30">0</div>
+                                <div id="res-kiosk" class="text-4xl font-black opacity-30">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-white/5 text-[9px] mono text-center opacity-40">
+                        LAST_REFRESH: <span id="summary-date-display"></span> | CONSUMER CARE ASSOCIATE
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-report" class="hidden">
+                <div class="max-w-5xl terminal-box">
+                    <div class="terminal-header"><span class="text-[10px] mono">New Entry</span></div>
+                    <form id="ticketForm" class="p-8 space-y-10">
+                        <div>
+                            <h3 class="mono text-[11px] text-[#00ff9d] mb-6 tracking-widest">TRACKING INFO</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">TICKET NO</label>
+                                    <input type="text" id="ticketNoInput" name="ticketNo" class="w-full p-3 rounded" required>
+                                    <p class="text-[9px] mono mt-1 opacity-40">PREV_ID: <span id="last-ticket-hint">...</span></p>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">TICKET TAGGING</label>
+                                    <input type="text" name="ticketTagging" class="w-full p-3 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">DATE/TIME ISSUED</label>
+                                    <input type="datetime-local" name="dateIssued" id="dateIssuedInput" class="w-full p-3 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">DATE/TIME PICKUP</label>
+                                    <input type="datetime-local" name="datePickedUp" class="w-full p-3 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">DATE/TIME REPLY</label>
+                                    <input type="datetime-local" name="dateReplied" class="w-full p-3 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">TICKET STATUS</label>
+                                    <select name="status" class="w-full p-3 rounded">
+                                        <option>PENDING</option>
+                                        <option>RESOLVED</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="mono text-[11px] text-[#00ff9d] mb-6 tracking-widest">CLIENT INFO</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">CUSTOMER NAME</label>
+                                    <input type="text" name="name" class="w-full p-3 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">BRANCH</label>
+                                    <select name="branch" class="w-full p-3 rounded">
+                                        <option value="">Select Branch</option>
+                                        <option>BACOLOD</option><option>BACLARAN</option><option>BALER</option>
+                                        <option>BALIWAG</option><option>BAMBANG</option><option>BANTAY</option>
+                                        <option>BULAN</option><option>CABANATUAN</option><option>CAINTA</option>
+                                        <option>CALAMBA</option><option>CALAPAN</option><option>CAUAYAN</option>
+                                        <option>DAET</option><option>DAVAO</option><option>GENERAL SANTOS</option>
+                                        <option>GUIMBA</option><option>ILOILO</option><option>KAWIT</option>
+                                        <option>KORONADAL</option><option>LEGAZPI</option><option>LIPA</option>
+                                        <option>LUCENA</option><option>MADDELA</option><option>MANDAUE</option>
+                                        <option>MANSALAY</option><option>MASBATE</option><option>MUNTINLUPA</option>
+                                        <option>NAGA</option><option>ODIONGAN</option><option>ORTIGAS CENTER, PASIG</option>
+                                        <option>PUERTO PRINCESA</option><option>ROXAS</option><option>SAN FERNANDO, LA UNION</option>
+                                        <option>SAN JACINTO</option><option>SAN JOSE, NUEVA ECIJA</option><option>SAN JOSE, OCC. MINDORO</option>
+                                        <option>SANTIAGO</option><option>SOLANO</option><option>SORSOGON</option>
+                                        <option>TABACO</option><option>TAGAYTAY</option><option>TAGBILARAN</option>
+                                        <option>TARLAC</option><option>TUGUEGARAO</option><option>URDANETA</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">CHANNEL</label>
+                                    <select name="channel" class="w-full p-3 rounded">
+                                        <option>HEIMDALL</option><option>EMAIL</option><option>CHATBOT</option>
+                                        <option>WALKIN</option><option>VIBER</option><option>MOBILE APP</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                    <div>
+                            <h3 class="mono text-[11px] text-[#00ff9d] mb-6 tracking-widest">//TICKET INFO</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6"> <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">TYPE OF TICKET</label>
+                                    <select name="type" class="w-full p-3 rounded">
+                                        <option value="">Select Type</option>
+                                        <option>DEPOSIT CONCERNS</option>
+                                        <option>LOAN CONCERNS</option>
+                                        <option>LOG-IN ISSUES</option>
+                                        <option>MOBILE APP ISSUES</option>
+                                        <option>SOA</option>
+                                        <option>OTHER CONCERNS</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">TYPE OF ENGAGEMENT</label>
+                                    <select name="engagement" class="w-full p-3 rounded">
+                                        <option value="">Select Type</option>
+                                        <option>CONCERN</option>
+                                        <option>REQUEST</option>
+                                        <option>QUERY</option>
+                                        <option>COMPLAINT</option>
+                                        <option>ISSUE</option>
+                                        <option>OTHERS</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] mono mb-2 opacity-50">SEVERITY LEVEL</label>
+                                    <select name="severity" class="w-full p-3 rounded border-l-2 border-red-500/50"> <option value="">Select Level</option>
+                                        <option class="text-red-500">CRITICAL</option>
+                                        <option class="text-orange-500">HIGH</option>
+                                        <option class="text-yellow-500">MODERATE</option>
+                                        <option class="text-blue-500">LOW</option>
+                                    </select>
+                                </div>
+
+                                <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div class="md:col-span-1">
+                                        <label class="block text-[10px] mono mb-2 opacity-50">CLIENT CONCERN</label>
+                                        <textarea name="concerns" class="w-full p-3 rounded h-28" placeholder="DESCRIBE THE ISSUE..."></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] mono mb-2 opacity-50">ASSISTANCE PROVIDED</label>
+                                        <textarea name="assistance" class="w-full p-3 rounded h-28" placeholder="DETAILS OF HELP GIVEN..."></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] mono mb-2 opacity-50">ACTION TAKEN</label>
+                                        <select name="action" class="w-full p-3 rounded">
+                                            <option value="">Select Action</option>
+                                            <option>ACCOMMODATED</option>
+                                            <option>ENDORSED</option>
+                                            <option>ESCALATED</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="w-full btn-cyber py-5 rounded shadow-lg">
+                            UPLOAD
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="C:\Users\Lenovo\OneDrive - AGRIBUSINESS RURAL BANK INC\Desktop\PRIVATE FILES\Getting Started\AI-Support Desk\script.js"></script>
+</body>
+</html>
