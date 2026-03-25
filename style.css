@@ -1,106 +1,209 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;700;900&display=swap');
-        
-        :root {
-            --bg-onyx: #f8fafc;
-            --card-bg: #ffffff;
-            --neon-green: #059669;
-            --slate-grey: #94a3b8;
-            --text-main: #0f172a;
-            --border-glass: rgba(0, 0, 0, 0.1);
-            --grad-color: rgba(5, 150, 105, 0.1);
-        }
-        
-        /* Light Mode Overrides */
-        .dark-theme {  
-            /* CHANGE THIS COLOR TO CHANGE THE GRADIENT IN THE MIDDLE */
-            --grad-color: rgba(0, 255, 157, 0.15); 
-            --bg-onyx: #050505;
-            --card-bg: #0d0d0d;
-            --neon-green: #00ff9d;
-            --slate-grey: #1e293b;
-            --text-main: #e2e8f0;
-            --border-glass: rgba(255, 255, 255, 0.08);
-        }
+/* 1. Imports */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;700;900&family=Poppins:wght@300;400;600&display=swap');
 
-        
-       
-
-        body { 
-            background-color: var(--bg-onyx);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s ease;
-            /* Central Gradient Glow */
-            background-image: 
-                radial-gradient(circle at 50% 50%, var(--grad-color), transparent 60%),
-                radial-gradient(circle at 2px 2px, rgba(128, 128, 128, 0.05) 1px, transparent 0);
-            background-size: 100% 100%, 30px 30px;
-        }
-
-        .mono { font-family: 'Fira Code', monospace; }
-
-        .terminal-box {
-            background: var(--card-bg);
-            border: 1px solid var(--border-glass);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .terminal-header {
-            background: rgba(128, 128, 128, 0.05);
-            padding: 10px 16px;
-            display: flex;
-            gap: 6px;
-            border-bottom: 1px solid var(--border-glass);
-        }
-
-        .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--slate-grey); opacity: 0.5; }
-
-        .sidebar-link.active { 
-            color: var(--neon-green) !important;
-            background: rgba(0, 255, 157, 0.05);
-            border-right: 3px solid var(--neon-green);
-        }
-
-        input, select, textarea {
-            background: rgba(128, 128, 128, 0.05) !important;
-            border: 1px solid var(--border-glass) !important;
-            color: var(--text-main) !important;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.85rem;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--neon-green) !important;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.2);
-        }
-
-        .btn-cyber {
-            background: var(--neon-green);
-            color: #fff;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.2s;
-        }
-        /* Fix for Sticky Header Background */
-        .sticky-header th {
-            position: sticky;
-            top: -1px; /* Slight offset to hide sub-pixel gaps */
-            background: var(--card-bg); /* Uses the theme's card color */
-            z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle depth when scrolling */
-        }
-
-/* Ensure the table doesn't collapse */
-table {
-    border-collapse: separate;
-    border-spacing: 0;
+/* 2. Variables & Theming */
+.light-theme {
+    --bg-onyx: #f8fafc;
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --neon-green: #059669;
+    --neon-teal: #0d9488;
+    --slate-grey: #94a3b8;
+    --text-main: #0f172a;
+    --border-glass: rgba(0, 0, 0, 0.08);
+    --grad-color: rgba(5, 150, 105, 0.05);
+    --input-bg: rgba(0, 0, 0, 0.03);
+    
 }
 
-        .btn-cyber:hover { transform: translateY(-1px); opacity: 0.9; }
+:root {
+    --bg-onyx: #050505;
+    --card-bg: rgba(13, 13, 13, 0.7);
+    --neon-green: #00ff9d;
+    --neon-teal: #2dd4bf;
+    --slate-grey: #64748b;
+    --text-main: #ffffff;
+    --border-glass: rgba(255, 255, 255, 0.1);
+    --grad-color: rgba(0, 255, 157, 0.12);
+    --input-bg: rgba(255, 255, 255, 0.03);
+}
 
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--slate-grey); border-radius: 10px; }
+/* 3. Global Styles */
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text-main);
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-onyx);
+    background-image: 
+        radial-gradient(circle at 50% 50%, var(--grad-color), transparent 70%),
+        url('agribankbg.png'); /* Note: Use relative paths for portability */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* 4. Layout Components */
+.terminal-box {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    color: var(--text-main);
+}
+
+.terminal-header, .card-header {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-glass);
+    color: var(--text-main);
+}
+
+.header-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+/* Mac-style Window Dots */
+.dot { width: 12px; height: 12px; border-radius: 50%; opacity: 0.8; }
+.dot:nth-child(1) { background: #ff5f56; }
+.dot:nth-child(2) { background: #ffbd2e; }
+.dot:nth-child(3) { background: #27c93f; }
+
+/* 5. UI Elements */
+.mono { font-family: 'Fira Code', monospace; }
+
+input, select, textarea {
+    background: var(--input-bg) !important;
+    border: 1px solid var(--border-glass) !important;
+    color: #6c6d6c !important;
+    border-radius: 8px !important;
+    padding: 10px 14px;
+    transition: all 0.2s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--neon-green) !important;
+    box-shadow: 0 0 12px rgba(0, 255, 157, 0.15);
+}
+
+.search-box {
+    background: rgba(2, 6, 23, 0.8) !important;
+    border: 1px solid rgba(45, 212, 191, 0.3) !important;
+    border-radius: 50px !important;
+    padding: 8px 25px;
+    font-size: 13px;
+}
+
+.btn-cyber {
+    background: var(--neon-green);
+    color: var(--text-main);
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 12px 24px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 255, 157, 0.3);
+    transition: 0.3s;
+}
+
+.btn-cyber:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 255, 157, 0.4);
+    filter: brightness(1.1);
+}
+
+/* 6. Table & Data Display */
+.table { margin: 0; width: 100%; border-collapse: collapse; }
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    background: rgba(20, 20, 20, 0.8); /* Added opacity for readability */
+    backdrop-filter: blur(8px);
+    color: var(--neon-teal);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 20px 35px;
+    border-bottom: 1px solid rgba(45, 212, 191, 0.1);
+    z-index: 10;
+}
+
+.table td { 
+    padding: 18px 35px; 
+    border: none;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.table tbody tr:hover { background: rgba(45, 212, 191, 0.05); }
+
+/* Status & Accents */
+.status-tag {
+    font-family: 'Fira Code', monospace;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+.status-online { color: #10b981; }
+.status-offline { color: #ef4444; }
+.status-pending { color: var(--slate-grey); }
+
+.terminal-id { color: var(--slate-grey); font-weight: 500; }
+.location-name { color: var(--text-main); font-weight: 700; text-transform: uppercase; }
+
+/* 7. Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: var(--border-glass); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--slate-grey); }
+
+/* Styling for missing fields when "UPLOAD" is clicked */
+.input-error {
+    border: 2px solid #ff4444 !important;
+    background-color: rgba(255, 68, 68, 0.1) !important;
+    outline: none;
+}
+
+/* This targets the full-screen background of the login page */
+.login-section {
+    display: flex;
+    justify-content: center; /* Horizontal centering */
+    align-items: center;     /* Vertical centering */
+    min-height: 100vh;       /* Takes up full screen height */
+    width: 100%;
+}
+
+/* Your updated login box */
+.loginpage-box {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    color: var(--text-main);
+    
+    /* Fixed 'padding: center' error: padding needs a pixel or rem value */
+    padding: 2.5rem; 
+    
+    /* Set a width so it doesn't stretch too wide */
+    width: 100%;
+    max-width: 400px; 
+    
+    /* Optional: Ensure text inside is centered */
+    text-align: center; 
+}
