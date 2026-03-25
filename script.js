@@ -3,6 +3,7 @@
 // --- CONFIGURATION ---
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyefF574W_3mWAm6XDAAxZFC4C9HgMnN0-Ugx5jBD81rXMkKZt9a98SJc7Ps45lcwz7/exec";
 const KIOSK_URL = "https://script.google.com/macros/s/AKfycbwUxNHnqVc2iW2M0XPz_ZmDvttPea046Z3fKq2rdrso5MuydrCLqNt4Q8FXEfhIoloi/exec";
+const SECRET_TOKEN = "MySuperSecretKey123";
 
 // --- GLOBAL STATE ---
 let cachedTickets = [];
@@ -12,8 +13,8 @@ let engagementChart = null;
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Check timeout first!
-    checkSessionTimeout();
+    // Check session validity immediately on load
+    checkSession();
 
     const loggedIn = localStorage.getItem('isLoggedIn');
 
@@ -126,13 +127,9 @@ function checkSession() {
     }
 }
 
-function forceLogout() {
-    localStorage.clear(); // Clears login, timestamp, and active page
-    location.reload(); 
-}
-
 // Helper to clear everything
 function forceLogout() {
+    localStorage.clear(); // Clears login, timestamp, and active page
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('loginTimestamp');
     localStorage.removeItem('activePage');
