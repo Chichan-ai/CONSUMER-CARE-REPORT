@@ -3,14 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consumer Care | Cyber-Terminal</title>
+    <title>Consumer Care | DASHBOARD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="Agribankicon.ico" type="image/x-icon">
 </head>
 <body>
-    <div class="flex h-screen">
+
+    <div id="login-section" class="flex items-center justify-center min-h-screen">
+        <div class="loginpage-box">
+            <div class="text-center mb-8">
+                <div class="font-black tracking-tighter text-3xl mb-2">
+                    CONSUMER<span class="text-[#00ff9d]">CARE</span>
+                </div>
+                <div class="text-[10px] mono opacity-50 tracking-[0.2em]">SECURE ACCESS REQUIRED</div>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-[10px] mono mb-2 opacity-50 text-left">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" 
+                        class="w-full bg-black/40 border border-white/10 p-3 rounded mono text-sm focus:border-[#00ff9d] focus:outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-[10px] mono mb-2 opacity-50 text-left">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" 
+                        class="w-full bg-black/40 border border-white/10 p-3 rounded mono text-sm focus:border-[#00ff9d] focus:outline-none transition-colors">
+                </div>
+                
+                <button onclick="handleLogin()" class="w-full bg-[#00ff9d] text-black font-black py-4 rounded hover:bg-[#00ff85] transition-all shadow-[0_0_15px_rgba(0,255,157,0.3)] active:scale-[0.98]">
+                    LOGIN
+                </button>
+                
+                <p id="login-error" class="text-red-500 text-[10px] mono text-center hidden">INVALID CREDENTIALS</p>
+            </div>
+            
+            <div class="mt-8 pt-6 border-t border-white/5 text-center">
+                <p class="text-[9px] mono opacity-30">Beta Version</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-dashboard" class="hidden flex h-screen">
         <aside class="w-64 border-r border-white/5 bg-black/20 backdrop-blur-md flex flex-col">
+   
             <div class="p-8 border-b border-white/5">
                 <div class="font-black tracking-tighter text-xl">
                     CONSUMER<span class="text-[#00ff9d]">CARE</span>
@@ -19,15 +56,20 @@
             </div>
             
             <nav class="flex-1 p-4 space-y-2">
-                <button onclick="showPage('dashboard')" id="nav-dashboard" class="sidebar-link active w-full text-left p-3 rounded mono text-xs">DASHBOARD</button>
-                <button onclick="showPage('summary')" id="nav-summary" class="sidebar-link w-full text-left p-3 rounded mono text-xs">SUMMARY REPORT</button>
-                <button onclick="showPage('report')" id="nav-report" class="sidebar-link w-full text-left p-3 rounded mono text-xs">NEW ENTRY</button>
+                <button onclick="showPage('dashboard')" id="nav-dashboard" class="sidebar-link active w-full text-left p-3 rounded mono text-s">DASHBOARD</button>
+                <button onclick="showPage('summary')" id="nav-summary" class="sidebar-link w-full text-left p-3 rounded mono text-s">SUMMARY REPORT</button>
+                <button onclick="showPage('report')" id="nav-report" class="sidebar-link w-full text-left p-3 rounded mono text-s">NEW ENTRY</button>
+                <button onclick="showPage('kiosk')" id="nav-kiosk" class="sidebar-link w-full text-left p-3 rounded mono text-s">AGRIBANK PAY KIOSK</button>
             </nav>
 
             <div class="p-4 border-t border-white/5 space-y-3">
-                <button onclick="toggleTheme()" class="w-full p-2 rounded border border-white/10 text-[10px] mono flex items-center justify-center gap-2 hover:bg-white/5">
+                <button onclick="toggleTheme()" class="w-full p-2 rounded border border-white-500/30 text-white-500 text-[10px] mono flex items-center justify-center gap-2 hover:bg-white-500/10 transition-colors uppercase">
                     <span id="theme-icon">🌙</span> LIGHT/DARK
                 </button>
+                <button onclick="handleLogout()" class="w-full p-2 rounded border border-white-500/30 text-white-500 text-[10px] mono flex items-center justify-center gap-2 hover:bg-red-500/10 transition-colors uppercase">
+                    <span>⏻</span> LOGOUT
+                </button>
+
                 <div class="text-center text-[10px] mono opacity-30">AGRIBANK</div>
             </div>
         </aside>
@@ -37,10 +79,10 @@
                 <header class="flex justify-between items-center">
                     <div>
                         <h1 class="text-3xl font-black italic tracking-tighter">PERFORMANCE MONITOR</h1>
-                        <p class="text-slate-500 mono text-xs uppercase">CCS Daily Monitoring Module</p>
+                        <p class="text-s font-black tracking-tighter">CCS Daily Monitoring Module</p>
                     </div>
                     <div id="loading-state" class="hidden text-[#00ff9d] mono text-xs animate-pulse">
-                        [ Please wait... ]
+                        <strong>[ Please wait... ]</strong>
                     </div>
                 </header>
 
@@ -75,7 +117,7 @@
 
                     <div class="terminal-box flex flex-col h-[400px]">
                         <div class="terminal-header flex justify-between items-center">
-                            <span class="text-[10px] mono opacity-50">DATABASE</span>
+                                <span class="text-[10px] mono opacity-50">DATABASE</span>
                             <div class="flex items-center gap-2">
                                 <span class="text-[9px] mono opacity-40">SEARCH:</span>
                                 <input type="text" id="tableSearch" onkeyup="filterTable()" placeholder="NAME OR TICKET #..." class="bg-transparent border-none text-[10px] p-1 w-32 focus:w-48 transition-all focus:ring-0">
@@ -85,10 +127,12 @@
                             <table class="w-full text-left text-[11px] mono">
                             <thead class="sticky-header">
                                     <tr class="text-slate-500 border-b border-white/5 uppercase">
-                                        <th class="pb-4 pt-2 px-2 text-left">ID</th>
+                                        <th class="pb-4 pt-2 px-2 text-left">Ticket No</th>
                                         <th class="pb-4 pt-2 px-2 text-left">Client</th>
                                         <th class="pb-4 pt-2 px-2 text-left">Branch</th>
-                                        <th class="pb-4 pt-2 px-2 text-left">Severity</th> <th class="pb-4 pt-2 px-2 text-right">Status</th>   </tr>
+                                        <th class="pb-4 pt-2 px-2 text-left">Severity</th> 
+                                        <th class="pb-4 pt-2 px-2 text-right">Status</th>   
+                                    </tr>
                                 </thead>
                                 <tbody id="daily-report-body" class="divide-y divide-white/5"></tbody>
                             </table>
@@ -143,34 +187,35 @@
             <section id="page-report" class="hidden">
                 <div class="max-w-5xl terminal-box">
                     <div class="terminal-header"><span class="text-[10px] mono">New Entry</span></div>
-                    <form id="ticketForm" class="p-8 space-y-10">
+                    <form id="ticketForm" class="p-8 space-y-10" novalidate>
                         <div>
-                            <h3 class="mono text-[11px] text-[#00ff9d] mb-6 tracking-widest">TRACKING INFO</h3>
+                            <h3 class="mono text-[11px] text-[#00ff9d] mb-6 tracking-widest"><strong>TRACKING INFO</strong></h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
                                     <label class="block text-[10px] mono mb-2 opacity-50">TICKET NO</label>
-                                    <input type="text" id="ticketNoInput" name="ticketNo" class="w-full p-3 rounded" required>
-                                    <p class="text-[9px] mono mt-1 opacity-40">PREV_ID: <span id="last-ticket-hint">...</span></p>
+                                    <input type="text" required id="ticketNoInput" name="ticketNo" class="w-full p-3 rounded">
+                                    <p class="text-[9px] mono mt-1 opacity-40">LAST TICKET NO: <span id="last-ticket-hint">...</span></p>
                                 </div>
                                 <div>
                                     <label class="block text-[10px] mono mb-2 opacity-50">TICKET TAGGING</label>
-                                    <input type="text" name="ticketTagging" class="w-full p-3 rounded">
+                                    <input type="text" required name="ticketTagging" class="w-full p-3 rounded">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] mono mb-2 opacity-50">DATE/TIME ISSUED</label>
-                                    <input type="datetime-local" name="dateIssued" id="dateIssuedInput" class="w-full p-3 rounded">
+                                    <input type="datetime-local" required name="dateIssued" id="dateIssuedInput" class="w-full p-3 rounded">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] mono mb-2 opacity-50">DATE/TIME PICKUP</label>
-                                    <input type="datetime-local" name="datePickedUp" class="w-full p-3 rounded">
+                                    <input type="datetime-local" required name="datePickedUp" class="w-full p-3 rounded">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] mono mb-2 opacity-50">DATE/TIME REPLY</label>
-                                    <input type="datetime-local" name="dateReplied" class="w-full p-3 rounded">
+                                    <input type="datetime-local" required name="dateReplied" class="w-full p-3 rounded">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] mono mb-2 opacity-50">TICKET STATUS</label>
-                                    <select name="status" class="w-full p-3 rounded">
+                                    <select name="status" required class="w-full p-3 rounded">
+                                        <option value="">Select Status</option>
                                         <option>PENDING</option>
                                         <option>RESOLVED</option>
                                     </select>
@@ -179,15 +224,15 @@
                         </div>
 
                         <div>
-                            <h3 class="mono text-[11px] text-[#00ff9d] mb-6 tracking-widest">CLIENT INFO</h3>
+                            <h3 class="mono text-[11px] text-[#00ff9d] mb-6 tracking-widest"><strong>CLIENT INFO</strong></h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
                                     <label class="block text-[10px] mono mb-2 opacity-50">CUSTOMER NAME</label>
-                                    <input type="text" name="name" class="w-full p-3 rounded">
+                                    <input type="text" name="name" required class="w-full p-3 rounded">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] mono mb-2 opacity-50">BRANCH</label>
-                                    <select name="branch" class="w-full p-3 rounded">
+                                    <select name="branch" required class="w-full p-3 rounded">
                                         <option value="">Select Branch</option>
                                         <option>BACOLOD</option><option>BACLARAN</option><option>BALER</option>
                                         <option>BALIWAG</option><option>BAMBANG</option><option>BANTAY</option>
@@ -207,8 +252,9 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] mono mb-2 opacity-50">CHANNEL</label>
-                                    <select name="channel" class="w-full p-3 rounded">
+                                    <label class="block text-[10px] mono mb-2 opacity-50 font-black">CHANNEL</label>
+                                    <select name="channel" required class="w-full p-3 rounded">
+                                        <option value="">Select Channel</option>
                                         <option>HEIMDALL</option><option>EMAIL</option><option>CHATBOT</option>
                                         <option>WALKIN</option><option>VIBER</option><option>MOBILE APP</option>
                                     </select>
@@ -216,11 +262,12 @@
                             </div>
                         </div>
 
-                    <div>
-                            <h3 class="mono text-[11px] text-[#00ff9d] mb-6 tracking-widest">//TICKET INFO</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6"> <div>
+                        <div>
+                            <h3 class="mono text-[11px] text-[#00ff9d] mb-6 tracking-widest"><strong>TICKET INFO</strong></h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
                                     <label class="block text-[10px] mono mb-2 opacity-50">TYPE OF TICKET</label>
-                                    <select name="type" class="w-full p-3 rounded">
+                                    <select name="type" required class="w-full p-3 rounded">
                                         <option value="">Select Type</option>
                                         <option>DEPOSIT CONCERNS</option>
                                         <option>LOAN CONCERNS</option>
@@ -232,7 +279,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-[10px] mono mb-2 opacity-50">TYPE OF ENGAGEMENT</label>
-                                    <select name="engagement" class="w-full p-3 rounded">
+                                    <select name="engagement" required class="w-full p-3 rounded">
                                         <option value="">Select Type</option>
                                         <option>CONCERN</option>
                                         <option>REQUEST</option>
@@ -244,7 +291,8 @@
                                 </div>
                                 <div>
                                     <label class="block text-[10px] mono mb-2 opacity-50">SEVERITY LEVEL</label>
-                                    <select name="severity" class="w-full p-3 rounded border-l-2 border-red-500/50"> <option value="">Select Level</option>
+                                    <select name="severity" required class="w-full p-3 rounded border-l-2 border-red-500/50">
+                                        <option value="">Select Level</option>
                                         <option class="text-red-500">CRITICAL</option>
                                         <option class="text-orange-500">HIGH</option>
                                         <option class="text-yellow-500">MODERATE</option>
@@ -255,15 +303,15 @@
                                 <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div class="md:col-span-1">
                                         <label class="block text-[10px] mono mb-2 opacity-50">CLIENT CONCERN</label>
-                                        <textarea name="concerns" class="w-full p-3 rounded h-28" placeholder="DESCRIBE THE ISSUE..."></textarea>
+                                        <textarea name="concerns" required class="w-full p-3 rounded h-28" placeholder="DESCRIBE THE ISSUE..."></textarea>
                                     </div>
                                     <div>
                                         <label class="block text-[10px] mono mb-2 opacity-50">ASSISTANCE PROVIDED</label>
-                                        <textarea name="assistance" class="w-full p-3 rounded h-28" placeholder="DETAILS OF HELP GIVEN..."></textarea>
+                                        <textarea name="assistance" required class="w-full p-3 rounded h-28" placeholder="DETAILS OF HELP GIVEN..."></textarea>
                                     </div>
                                     <div>
                                         <label class="block text-[10px] mono mb-2 opacity-50">ACTION TAKEN</label>
-                                        <select name="action" class="w-full p-3 rounded">
+                                        <select name="action" required class="w-full p-3 rounded">
                                             <option value="">Select Action</option>
                                             <option>ACCOMMODATED</option>
                                             <option>ENDORSED</option>
@@ -280,10 +328,35 @@
                     </form>
                 </div>
             </section>
+            
+            <section id="page-kiosk" class="hidden">
+                <div class="terminal-box">
+                    <div class="card-header justify-between">
+                        <div class="header-title uppercase font-bold text-[#2dd4bf]">Agribank Pay Kiosk</div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] mono opacity-40">SEARCH:</span>
+                            <input type="text" id="searchInput" class="search-box p-2" placeholder="NAME OR TERMINAL #" onkeyup="filterTable()">
+                            <button class="btn-cyber !py-1 !px-3 rounded-full text-[10px]" onclick="loadKioskData()">REFRESH</button>
+                        </div>
+                    </div>
+                    <div class="p-0">
+                        <div id="loader" class="p-20 text-center text-[#2dd4bf] mono">
+                            <div class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mb-4"></div>
+                            <div>CONNECTING...</div>
+                        </div>
+                        <table class="table w-full" id="kioskTable" style="display:none;">
+                            <thead>
+                                <tr><th>Terminal No</th><th>Location</th><th>Go Live</th><th>Hours</th><th class="text-right">Status</th></tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>  
         </main>
     </div>
 
     <script src="script.js"></script>
+    <script src="config.js.txt"></script>
 </body>
-
 </html>
