@@ -1,7 +1,7 @@
 'use strict';
 
 // --- CONFIGURATION ---
-const _0x4f23 = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5ZWZGNTc0V18zbVdBbTZYREFBeFpGQzRDOUhnTW5OMC1VZ3g1akJEODFyWE1rS1p0OWE5OFNKYzdQczQ1bGN3ejcvZXhlYw==";
+const _0x4f23 = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J3RHU2TlpwelFraGdtdGtxOW83UFNJTXdnemdTcl94ckdFQXVYX0JkaGluUmNobFhXblViZDNCNENjRUhneWNvN20vZXhlYw==";
 const SCRIPT_URL = atob(_0x4f23);
 const _0x4f21 = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J3VXhOSG5xVmMyaVcyTTBYUHpfWm1EdnR0UGVhMDQ2WjNmS3EycmRyc281TXV5ZHJDTHFOdDRROEZYRWZoSW9sb2kvZXhlYwo=";
 const KIOSK_URL =atob(_0x4f21);
@@ -62,7 +62,7 @@ async function handleLogin() {
     const pass = document.getElementById('password').value;
     const errorMsg = document.getElementById('login-error');
     const btn = document.querySelector('button[onclick="handleLogin()"]');
-    
+
     if (!user || !pass) {
         if (errorMsg) {
             errorMsg.innerText = "! CREDENTIALS REQUIRED";
@@ -71,18 +71,20 @@ async function handleLogin() {
         return;
     }
 
-    // UI Feedback
     btn.innerText = "AUTHENTICATING...";
     btn.disabled = true;
-    if (errorMsg) errorMsg.classList.add('hidden');
 
     try {
         const response = await fetch(SCRIPT_URL, {
             method: "POST",
+            mode: "cors", // Ensure CORS is active
+            // Using text/plain avoids complex 'preflight' checks in GAS
+            headers: { "Content-Type": "text/plain" }, 
             body: JSON.stringify({ 
                 action: "login", 
                 username: user, 
-                password: pass 
+                password: pass,
+                token: SECRET_TOKEN // Crucial: Your backend requires this!
             })
         });
 
@@ -90,24 +92,16 @@ async function handleLogin() {
 
         if (data.status === "success") {
             localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('loginTimestamp', Date.now()); // Store current time in ms
+            localStorage.setItem('loginTimestamp', Date.now());
             showDashboard();
             initializeAppData();
-        } 
-        else {
-            if (errorMsg) {
-                errorMsg.innerText = "INVALID CREDENTIALS";
-                errorMsg.classList.remove('hidden');
-            } else {
-                alert("Invalid Credentials");
-            }
-            btn.innerText = "INITIALIZE SESSION";
-            btn.disabled = false;
+        } else {
+            throw new Error("Invalid Credentials");
         }
     } catch (error) {
         console.error("Login Error:", error);
         if (errorMsg) {
-            errorMsg.innerText = "! CONNECTION ERROR";
+            errorMsg.innerText = error.message === "Invalid Credentials" ? "INVALID CREDENTIALS" : "! CONNECTION ERROR";
             errorMsg.classList.remove('hidden');
         }
         btn.innerText = "INITIALIZE SESSION";
@@ -124,7 +118,7 @@ function checkSession() {
         const fiveMinutes = 5 * 60 * 1000; // 5 minutes timeout session
 
         if (currentTime - loginTime > fiveMinutes) {
-            alert("SESSION EXPIRED!");
+            alert("SESSION EXPIRED: Session limit reached (1 min).");
             forceLogout();
         }
     }
@@ -164,7 +158,7 @@ function toggleTheme() {
 
 function showPage(page) {
     localStorage.setItem('activePage', page);
-    ['dashboard', 'summary', 'report', 'kiosk'].forEach(p => {
+    ['dashboard', 'summary', 'report', 'kiosk', 'admin'].forEach(p => {
         const pageEl = document.getElementById(`page-${p}`);
         const navEl = document.getElementById(`nav-${p}`);
         if (pageEl) pageEl.classList.toggle('hidden', p !== page);
@@ -508,3 +502,173 @@ document.addEventListener('keypress', function (e) {
         handleLogin();
     }
 });
+// --- ADMIN CORE LOGIC ---
+
+function toggleTokenVisibility() {
+    const input = document.getElementById('admin-token-input');
+    if (input) input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function addLog(message) {
+    const logContainer = document.getElementById('admin-logs');
+    if (!logContainer) return;
+
+    const time = new Date().toLocaleTimeString([], { hour12: false });
+    const logEntry = document.createElement('p');
+    logEntry.className = "mb-1 border-l-2 border-[#00ff9d]/30 pl-2 py-0.5 hover:bg-white/5 transition";
+    logEntry.innerHTML = `<span class="opacity-30 font-mono text-[10px]">[${time}]</span> <span class="text-[#00ff9d]">>></span> ${message}`;
+    
+    logContainer.prepend(logEntry); 
+}
+
+// Automatically log important events by wrapping existing functions
+const originalLoadData = loadData;
+loadData = async function() {
+    addLog("FETCHING_TICKET_DATA...");
+    await originalLoadData();
+    addLog("TICKET_SYNC_COMPLETE");
+};
+
+const originalLoadKiosk = loadKioskData;
+loadKioskData = async function() {
+    addLog("SCANNING_KIOSK_STATUS...");
+    await originalLoadKiosk();
+    addLog("KIOSK_SCAN_SUCCESSFUL");
+};
+
+// --- USER MANAGEMENT CORE ---
+
+async function renderUserTable() {
+    const tableBody = document.getElementById('user-list-table');
+    if (!tableBody) return;
+
+    try {
+        addLog("SYNCING_USER_DATABASE...");
+        // Ensure we are hitting the correct endpoint with the 'users' type
+        const response = await fetch(`${SCRIPT_URL}?token=${SECRET_TOKEN}&type=users`);
+        const data = await response.json(); // Fixed the 'data is undefined' error
+        
+        const users = Array.isArray(data) ? data : (data.users || []);
+
+        if (users.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 opacity-50">NO USERS FOUND</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = users.map(user => {
+            const usernameClean = user.username ? user.username.trim().toLowerCase() : "unknown";
+            const currentStatus = (user.status || 'ACTIVE').toString().toUpperCase();
+            
+            // Visual Role Detection logic
+            const isAdmin = usernameClean.includes('admin') || usernameClean === 'christian';
+            const roleLabel = isAdmin ? 'ADMIN' : 'ENCODER';
+            const roleClass = isAdmin 
+                ? 'bg-purple-500/20 text-purple-400 border-purple-500/50' 
+                : 'bg-blue-500/20 text-blue-400 border-blue-500/50';
+
+            const statusClass = currentStatus === 'ACTIVE' ? 'text-[#00ff9d]' : 'text-red-500';
+
+            return `
+            <tr class="border-b border-white/5 hover:bg-white/10 transition group">
+                <td class="py-3 font-bold uppercase tracking-tighter ${isAdmin ? 'text-purple-400' : 'text-slate-200'}">
+                    ${user.username}
+                </td>
+                <td class="py-3">
+                    <span class="px-2 py-0.5 rounded text-[10px] border ${roleClass}">
+                        ${roleLabel}
+                    </span>
+                </td>
+                <td class="py-3 text-slate-500 text-xs uppercase font-mono">${user.branch || 'N/A'}</td>
+                <td class="py-3 ${statusClass} font-mono text-xs font-bold">
+                    [${currentStatus}]
+                </td>
+                <td class="py-3 text-right">
+                    <button onclick="toggleUserStatusRemote('${user.username}', '${currentStatus}')" 
+                            class="text-[10px] text-blue-400 hover:bg-blue-400 hover:text-black border border-blue-400/30 px-3 py-1 rounded-sm transition-all uppercase font-bold">
+                        TOGGLE_STATUS
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
+        
+        addLog("USER_SYNC_SUCCESS");
+
+    } catch (e) {
+        console.error("User Fetch Error:", e);
+        addLog("CRITICAL: USER_DATABASE_UNREACHABLE");
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-500">FAILED TO LOAD USERS</td></tr>';
+    }
+}
+
+// --- REMOTE STATUS TOGGLE ---
+async function toggleUserStatusRemote(username, currentStatus) {
+    // Logic: If active, make inactive. If anything else (INACTIVE/ERROR), make active.
+    const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    
+    addLog(`REQUESTING_STATUS_CHANGE: ${username} -> ${newStatus}`);
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "updateUserStatus",
+                username: username,
+                newStatus: newStatus,
+                token: SECRET_TOKEN
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+            addLog(`SUCCESS: ${username} UPDATED`);
+            renderUserTable(); // Refresh the table
+        } else {
+            throw new Error(result.message || "Unknown error");
+        }
+
+    } catch (e) {
+        addLog("ERROR: STATUS_UPDATE_FAILED");
+        console.error("Transmission Error:", e);
+        alert("SYNC ERROR: Status could not be updated in the database.");
+    }
+}
+
+// --- ADD NEW USER MODAL ---
+async function openAddUserModal() {
+    const user = prompt("NEW USERNAME:");
+    if (!user) return;
+    const pass = prompt("ASSIGN PASSWORD:");
+    if (!pass) return;
+    const branch = prompt("ASSIGN BRANCH (e.g. PASIG, MALABON):") || "GENERAL";
+
+    addLog(`POSTING_NEW_USER: ${user.toUpperCase()}...`);
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "createUser",
+                username: user,
+                password: pass,
+                branch: branch.toUpperCase(),
+                token: SECRET_TOKEN
+            })
+        });
+
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            addLog(`DATABASE_RECORD_CREATED: ${user.toUpperCase()}`);
+            alert(`USER ${user} ADDED SUCCESSFULLY`);
+            renderUserTable(); 
+        } else {
+            throw new Error(result.message);
+        }
+
+    } catch (e) {
+        addLog("ERROR: FAILED_TO_CREATE_USER");
+        console.error("Transmission Error:", e);
+        alert("TRANSMISSION ERROR: Check connection to Google Sheets.");
+    }
+}
