@@ -350,7 +350,99 @@
                         </table>
                     </div>
                 </div>
+            </section>
+            <section id="page-kiosk" class="hidden">
+                <div class="terminal-box">
+                    <div class="card-header justify-between">
+                        <div class="header-title uppercase font-bold text-[#2dd4bf]">Agribank Pay Kiosk</div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] mono opacity-40">SEARCH:</span>
+                            <input type="text" id="searchInput" class="search-box p-2" placeholder="NAME OR TERMINAL #" onkeyup="filterTable()">
+                            <button class="btn-cyber !py-1 !px-3 rounded-full text-[10px]" onclick="loadKioskData()">REFRESH</button>
+                        </div>
+                    </div>
+                    <div class="p-0">
+                        <div id="loader" class="p-20 text-center text-[#2dd4bf] mono">
+                            <div class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mb-4"></div>
+                            <div>CONNECTING...</div>
+                        </div>
+                        <table class="table w-full" id="kioskTable" style="display:none;">
+                            <thead>
+                                <tr><th>Terminal No</th><th>Location</th><th>Go Live</th><th>Hours</th><th class="text-right">Status</th></tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
             </section>  
+            <section id="page-admin" class="hidden p-6 animate-in fade-in duration-500">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <div class="bg-black/40 border border-[#00ff9d]/30 p-6 rounded-lg backdrop-blur-md">
+                        <h2 class="text-[#00ff9d] font-mono mb-4 flex items-center gap-2">
+                            <span class="animate-pulse">●</span> SYSTEM_CORE_ACCESS
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs text-slate-500 block mb-1">CURRENT_SESSION_TOKEN</label>
+                                <div class="flex gap-2">
+                                    <input type="password" id="admin-token-input" value="MySuperSecretKey123" 
+                                        class="bg-black border border-white/10 p-2 rounded w-full text-xs font-mono text-[#00ff9d]">
+                                    <button onclick="toggleTokenVisibility()" class="p-2 border border-white/10 rounded hover:bg-white/5">👁️</button>
+                                </div>
+                            </div>
+                            <div class="pt-4 grid grid-cols-2 gap-2">
+                                <button onclick="refreshDashboardData()" class="bg-[#00ff9d]/10 border border-[#00ff9d] text-[#00ff9d] py-2 rounded text-xs hover:bg-[#00ff9d] hover:text-black transition">
+                                    SYNC_DATABASE
+                                </button>
+                                <button onclick="forceLogout()" class="bg-red-500/10 border border-red-500 text-red-500 py-2 rounded text-xs hover:bg-red-500 hover:text-white transition">
+                                    TERMINATE_SESSION
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-black/40 border border-white/10 p-6 rounded-lg font-mono">
+                        <h2 class="text-slate-400 mb-4 flex justify-between items-center border-b border-white/10 pb-2">
+                            <span>EVENT_LOGS</span>
+                            <span class="text-[10px] opacity-50">v4.0.2</span>
+                        </h2>
+                        <div id="admin-logs" class="h-48 overflow-y-auto text-[11px] space-y-1 text-slate-500 scrollbar-hide">
+                            <p>> [SYSTEM] INITIALIZING ADMIN_MODULE...</p>
+                            <p>> [AUTH] SESSION_START: OK</p>
+                            <p class="text-yellow-500">> [WARN] API_LATENCY: 142ms</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-black/40 border border-white/10 p-6 rounded-lg backdrop-blur-md md:col-span-2">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-[#00ff9d] font-mono flex items-center gap-2">
+                                <span class="text-xs">●</span> USERMANAGEMENT CORE
+                            </h2>
+                            <button onclick="openAddUserModal()" class="bg-[#00ff9d] text-black px-4 py-1 rounded text-[10px] font-bold hover:bg-[#00e5ff] transition">
+                                + ADD NEW USER
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left font-mono text-xs">
+                                <thead>
+                                    <tr class="border-b border-white/10 text-slate-500">
+                                        <th class="pb-2">USERNAME</th>
+                                        <th class="pb-2">ROLE</th>
+                                        <th class="pb-2">BRANCH</th>
+                                        <th class="pb-2">STATUS</th>
+                                        <th class="pb-2 text-right">ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-list-table" class="text-slate-300">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
         </main>
     </div>
 
