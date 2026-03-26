@@ -121,7 +121,7 @@ function checkSession() {
         const fiveMinutes = 5 * 60 * 1000; // 5 minutes timeout session
 
         if (currentTime - loginTime > fiveMinutes) {
-            alert("SESSION EXPIRED: Session limit reached (1 min).");
+            alert("SESSION EXPIRED!");
             forceLogout();
         }
     }
