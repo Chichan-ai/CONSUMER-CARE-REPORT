@@ -1,9 +1,12 @@
 'use strict';
 
 // --- CONFIGURATION ---
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyefF574W_3mWAm6XDAAxZFC4C9HgMnN0-Ugx5jBD81rXMkKZt9a98SJc7Ps45lcwz7/exec";
-const KIOSK_URL = "https://script.google.com/macros/s/AKfycbwUxNHnqVc2iW2M0XPz_ZmDvttPea046Z3fKq2rdrso5MuydrCLqNt4Q8FXEfhIoloi/exec";
-const SECRET_TOKEN = "API_TOKEN";
+const _0x4f23 = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5ZWZGNTc0V18zbVdBbTZYREFBeFpGQzRDOUhnTW5OMC1VZ3g1akJEODFyWE1rS1p0OWE5OFNKYzdQczQ1bGN3ejcvZXhlYw==";
+const SCRIPT_URL = atob(_0x4f23);
+const _0x4f21 = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J3VXhOSG5xVmMyaVcyTTBYUHpfWm1EdnR0UGVhMDQ2WjNmS3EycmRyc281TXV5ZHJDTHFOdDRROEZYRWZoSW9sb2kvZXhlYwo=";
+const KIOSK_URL =atob(_0x4f21);
+const _0x4f22 = "TXlTdXBlclNlY3JldEtleTEyMw=="; 
+const SECRET_TOKEN = atob(_0x4f22);
 
 // --- GLOBAL STATE ---
 let cachedTickets = [];
