@@ -58,6 +58,8 @@
                 <button onclick="showPage('summary')" id="nav-summary" class="sidebar-link w-full text-left p-3 rounded mono text-s">SUMMARY REPORT</button>
                 <button onclick="showPage('report')" id="nav-report" class="sidebar-link w-full text-left p-3 rounded mono text-s">NEW ENTRY</button>
                 <button onclick="showPage('kiosk')" id="nav-kiosk" class="sidebar-link w-full text-left p-3 rounded mono text-s">AGRIBANK PAY KIOSK</button>
+                <button onclick="showPage('admin')" id="nav-admin" class="sidebar-link w-full text-left p-3 rounded mono text-s">ADMIN PANEL</button>
+            </nav>
             </nav>
 
             <div class="p-4 border-t border-white/5 space-y-3">
@@ -327,30 +329,6 @@
                 </div>
             </section>
             
-            <section id="page-kiosk" class="hidden">
-                <div class="terminal-box">
-                    <div class="card-header justify-between">
-                        <div class="header-title uppercase font-bold text-[#2dd4bf]">Agribank Pay Kiosk</div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[9px] mono opacity-40">SEARCH:</span>
-                            <input type="text" id="searchInput" class="search-box p-2" placeholder="NAME OR TERMINAL #" onkeyup="filterTable()">
-                            <button class="btn-cyber !py-1 !px-3 rounded-full text-[10px]" onclick="loadKioskData()">REFRESH</button>
-                        </div>
-                    </div>
-                    <div class="p-0">
-                        <div id="loader" class="p-20 text-center text-[#2dd4bf] mono">
-                            <div class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mb-4"></div>
-                            <div>CONNECTING...</div>
-                        </div>
-                        <table class="table w-full" id="kioskTable" style="display:none;">
-                            <thead>
-                                <tr><th>Terminal No</th><th>Location</th><th>Go Live</th><th>Hours</th><th class="text-right">Status</th></tr>
-                            </thead>
-                            <tbody id="tableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
             <section id="page-kiosk" class="hidden">
                 <div class="terminal-box">
                     <div class="card-header justify-between">
