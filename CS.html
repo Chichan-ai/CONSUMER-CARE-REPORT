@@ -65,7 +65,6 @@
                     ADMIN
                 </button>
             </nav>
-            </nav>
 
             <div class="p-4 border-t border-white/5 space-y-3">
                 <button onclick="toggleTheme()" class="w-full p-2 rounded border border-white-500/30 text-white-500 text-[10px] mono flex items-center justify-center gap-2 hover:bg-white-500/10 transition-colors uppercase">
@@ -358,84 +357,99 @@
                     </div>
                 </div>
             </section>  
-            <section id="page-admin" class="hidden p-6 animate-in fade-in duration-500">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <section id="page-admin" class="hidden space-y-8">
+                <header>
+                    <h1 class="text-3xl font-black italic tracking-tighter">SYSTEM ADMINISTRATION</h1>
+                    <p class="text-s font-black tracking-tighter">CORE SYSTEM CONTROLS</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
-                    <div class="bg-black/40 border border-[#00ff9d]/30 p-6 rounded-lg backdrop-blur-md">
-                        <h2 class="text-[#00ff9d] font-mono mb-4 flex items-center gap-2 text-sm">
-                            <span class="animate-pulse">●</span> SYSTEM CORE ACCESS
-                        </h2>
-                        <div class="space-y-4">
+                    <div class="terminal-box">
+                        <div class="terminal-header">
+                            <div class="dot"></div>
+                            <span class="text-[10px] mono opacity-50 ml-2">SYSTEM CORE ACCESS</span>
+                        </div>
+                        <div class="p-6 space-y-4">
                             <div>
-                                <label class="text-[10px] text-slate-500 block mb-1 font-mono">CURRENT SESSION TOKEN</label>
+                                <label class="text-[10px] mono mb-2 opacity-50 block">CURRENT SESSION TOKEN</label>
                                 <div class="flex gap-2">
                                     <input type="password" id="admin-token-input" value="MySuperSecretKey123" 
-                                        class="bg-black border border-white/10 p-2 rounded w-full text-xs font-mono text-[#00ff9d] focus:outline-none focus:border-[#00ff9d]/50">
+                                        class="w-full text-xs mono text-[#00ff9d]">
                                     <button onclick="toggleTokenVisibility()" class="px-3 border border-white/10 rounded hover:bg-white/5 transition">👁️</button>
                                 </div>
                             </div>
                             <div class="pt-2 grid grid-cols-2 gap-2">
-                                <button onclick="renderUserTable()" class="bg-[#00ff9d]/10 border border-[#00ff9d] text-[#00ff9d] py-2 rounded text-[10px] font-bold hover:bg-[#00ff9d] hover:text-black transition uppercase">
+                                <button onclick="renderUserTable()" class="btn-cyber !py-2 !text-[10px]">
                                     SYNC_DATABASE
                                 </button>
-                                <button onclick="forceLogout()" class="bg-red-500/10 border border-red-500 text-red-500 py-2 rounded text-[10px] font-bold hover:bg-red-500 hover:text-white transition uppercase">
+                                <button onclick="forceLogout()" class="btn-cyber !py-2 !text-[10px] !bg-red-500 !shadow-[0_0_14px_rgba(239,68,68,0.25)]">
                                     TERMINATE_SESSION
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-black/40 border border-white/10 p-6 rounded-lg font-mono relative">
-                        <h2 class="text-slate-400 mb-4 flex justify-between items-center border-b border-white/10 pb-2 text-xs">
-                            <span>EVENT_LOG_STREAM</span>
-                            <button onclick="document.getElementById('admin-logs').innerHTML = ''" class="text-[9px] opacity-50 hover:opacity-100 hover:text-red-400">[CLEAR_LOGS]</button>
-                        </h2>
-                        <div id="admin-logs" class="h-32 overflow-y-auto text-[10px] space-y-1 text-slate-500 scrollbar-hide">
-                            <p class="text-blue-400">> [SYSTEM] INITIALIZING ADMIN MODULE...</p>
-                            <p class="text-blue-400">> [AUTH] SESSION START: OK</p>
+                    <div class="terminal-box">
+                        <div class="terminal-header flex justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="dot"></div>
+                                <span class="text-[10px] mono opacity-50 ml-2">EVENT LOG STREAM</span>
+                            </div>
+                            <button onclick="document.getElementById('admin-logs').innerHTML = ''" class="text-[9px] mono opacity-40 hover:opacity-100 hover:text-red-400">[CLEAR_LOGS]</button>
+                        </div>
+                        <div class="p-4">
+                            <div id="admin-logs" class="h-32 overflow-y-auto text-[10px] space-y-1 text-slate-500 mono">
+                                <p class="text-blue-400">> [SYSTEM] INITIALIZING ADMIN MODULE...</p>
+                                <p class="text-blue-400">> [AUTH] SESSION START: OK</p>
+                            </div>
                         </div>
                     </div>
+
                 </div>
 
-                <div class="bg-black/40 border border-white/10 p-6 rounded-lg backdrop-blur-md">
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <h2 class="text-[#00ff9d] font-mono flex items-center gap-2 text-sm">
-                                <span class="text-xs animate-pulse">●</span> USER MANAGEMENT
-                            </h2>
-                            <button onclick="openAddUserModal()" class="bg-[#00ff9d] text-black px-4 py-1 rounded text-[10px] font-bold hover:bg-[#00e5ff] transition shadow-[0_0_10px_rgba(0,255,157,0.2)] uppercase">
-                                + ADD NEW USER
-                            </button>
+                <div class="terminal-box">
+                    <div class="terminal-header flex justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="dot"></div>
+                            <span class="text-[10px] mono opacity-50 ml-2">USER MANAGEMENT</span>
                         </div>
+                        <button onclick="openAddUserModal()" class="btn-cyber !py-1 !px-3 !text-[10px] rounded-full">
+                            + ADD NEW USER
+                        </button>
+                    </div>
+
+                    <div class="p-6 space-y-4">
 
                         <div class="flex flex-col md:flex-row gap-3 justify-between items-center bg-white/5 p-2 rounded border border-white/5">
                             <div class="relative w-full md:w-64">
                                 <input type="text" id="user-search" oninput="filterUserTable()" placeholder="SEARCH_DATABASE..." 
-                                    class="w-full bg-black/40 border border-white/10 pl-8 pr-3 py-1.5 rounded font-mono text-[10px] focus:border-[#00ff9d] focus:outline-none transition-colors uppercase">
+                                    class="w-full pl-8 pr-3 py-1.5 text-[10px] mono uppercase">
                                 <span class="absolute left-2.5 top-2 opacity-30 text-[10px]">🔍</span>
                             </div>
-                            <div class="text-[10px] font-mono opacity-50 whitespace-nowrap">
+                            <div class="text-[10px] mono opacity-50 whitespace-nowrap">
                                 ACTIVE USER: <span id="user-count" class="text-[#00ff9d] font-bold text-xs">00</span>
                             </div>
                         </div>
 
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left font-mono text-xs">
+                            <table class="table w-full">
                                 <thead>
-                                    <tr class="border-b border-white/10 text-slate-500">
-                                        <th class="pb-2">USERNAME</th>
-                                        <th class="pb-2">ROLE</th>
-                                        <th class="pb-2">BRANCH</th>
-                                        <th class="pb-2">STATUS</th>
-                                        <th class="pb-2 text-right">ACTIONS</th>
+                                    <tr>
+                                        <th>USERNAME</th>
+                                        <th>ROLE</th>
+                                        <th>BRANCH</th>
+                                        <th>STATUS</th>
+                                        <th class="text-right">ACTIONS</th>
                                     </tr>
                                 </thead>
-                                <tbody id="user-list-table" class="text-slate-300">
-                                    </tbody>
+                                <tbody id="user-list-table" class="text-slate-300 text-xs">
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+
             </section>
         </main>
     </div>
