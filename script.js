@@ -727,3 +727,95 @@ function displayUsers(userArray) {
         </tr>`;
     }).join('');
 }
+
+// ------------------------------
+// OPTIONAL UI ENHANCEMENTS
+// ------------------------------
+
+// 1. Smooth number count up animation
+function animateValue(el, start, end, duration = 600) {
+  if (start === end) return;
+  let startTimestamp = null;
+  const step = (timestamp) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+    el.innerText = Math.floor(progress * (end - start) + start);
+    if (progress < 1) window.requestAnimationFrame(step);
+  };
+  window.requestAnimationFrame(step);
+}
+
+// Add count animation to dashboard stats
+const originalRenderDashboard = renderDashboard;
+renderDashboard = function(data) {
+  const oldTotal = parseInt(document.getElementById('stat-total').innerText) || 0;
+  const oldResolved = parseInt(document.getElementById('stat-resolved').innerText) || 0;
+  const oldPending = parseInt(document.getElementById('stat-pending').innerText) || 0;
+  
+  originalRenderDashboard(data);
+  
+  const newTotal = data.length;
+  const newResolved = data.filter(t => String(t.Status).toLowerCase() === 'resolved').length;
+  const newPending = data.filter(t => String(t.Status).toLowerCase() === 'pending').length;
+
+  animateValue(document.getElementById('stat-total'), oldTotal, newTotal);
+  animateValue(document.getElementById('stat-resolved'), oldResolved, newResolved);
+  animateValue(document.getElementById('stat-pending'), oldPending, newPending);
+}
+
+// 2. Global Keyboard Shortcuts
+document.addEventListener('keydown', e => {
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+
+  // / = focus search
+  if (e.key === '/') {
+    e.preventDefault();
+    document.getElementById('tableSearch')?.focus();
+  }
+
+  // r = refresh
+  if (e.key === 'r' && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault();
+    refreshDashboardData();
+    showToast("✓ SYNCED");
+  }
+
+  // number keys jump to page
+  if (e.key >= '1' && e.key <= '5') {
+    const pages = ['dashboard', 'summary', 'report', 'kiosk', 'admin'];
+    showPage(pages[parseInt(e.key) -1]);
+  }
+
+  // ? = show shortcuts
+  if (e.key === '?') {
+    alert(`SHORTCUTS:\n/ = Search\nR = Refresh\n1-5 = Jump to page\nAlt+Click = Debug`);
+  }
+});
+
+// 3. Toast helper
+function showToast(message) {
+  document.querySelector('.toast')?.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerText = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 1500);
+}
+
+// Show toast after successful refresh
+const originalLoadData = loadData;
+loadData = async function() {
+  await originalLoadData();
+  showToast("✓ SYNCED");
+}
+
+// 4. Login terminal caret
+const loginSubtitle = document.querySelector('.loginpage-box .opacity-50');
+if (loginSubtitle) loginSubtitle.innerHTML += ' <span class="login-caret">_</span>';
+
+// 5. Night shift mode
+const hour = new Date().getHours();
+if (hour < 5 || hour >= 23) {
+  document.body.style.filter = "contrast(1.05)";
+  addLog("NIGHT_SHIFT_MODE_ACTIVE");
+}
