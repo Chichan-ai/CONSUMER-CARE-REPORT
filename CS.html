@@ -155,35 +155,72 @@
 
                 </div>
             </section>
+            <section id="page-summary" class="hidden space-y-6">
+                <div class="flex justify-between items-end border-b border-white/10 pb-4">
+                    <div class="space-y-1">
+                        <h1 class="text-3xl font-black italic tracking-tighter text-white">CS SUMMARY</h1>
+                        <div class="text-[9px] mono opacity-30 uppercase tracking-widest text-white/50">Performance Dashboard</div>
+                    </div>
+                </div>
 
-            <section id="page-summary" class="hidden space-y-8">
-                <h1 class="text-3xl font-black italic tracking-tighter">CS SUMMARY</h1>
                 <div class="terminal-box max-w-4xl">
-                    <div class="terminal-header"><span class="text-[10px] mono">Daily Report</span></div>
-                    <div class="p-0">
-                        <div class="grid grid-cols-3 bg-white/5 p-4 text-[10px] mono font-bold opacity-50 border-b border-white/5">
-                            <div>TICKET METRICS</div><div>MOBILE APP TICKET</div><div>KIOSK TICKET</div>
+                    <div class="terminal-header flex justify-between items-center">
+                        <span class="text-[10px] mono uppercase">Real-Time Metrics</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="mono text-[10px] opacity-40 uppercase tracking-widest text-[#00ff9d]">TICKET FTM:</span>
+                            <span id="global-monthly-total" class="text-xl font-black text-[#00ff9d]">---</span>
                         </div>
+                    </div>
+                    <div class="p-0">
+                        <div class="grid grid-cols-2 bg-white/5 p-4 text-[10px] mono font-bold opacity-50 border-b border-white/5 uppercase">
+                            <div>Metric Category</div>
+                            <div class="text-right pr-6">Mobile App and Kiosk</div>
+                        </div>
+                        
                         <div class="divide-y divide-white/5">
-                            <div class="grid grid-cols-3 p-8 items-center">
-                                <div class="mono text-xs opacity-60">DAILY FTD</div>
-                                <div id="ftd-ma" class="text-4xl font-black">0</div>
-                                <div id="ftd-kiosk" class="text-4xl font-black">0</div>
+                            <div class="grid grid-cols-2 p-6 items-center">
+                                <div class="mono text-xs opacity-60">TICKET FTD</div>
+                                <div id="ftd-ma" class="text-5xl font-black text-right pr-6">0</div>
                             </div>
-                            <div class="grid grid-cols-3 p-8 items-center bg-white/5">
-                                <div class="mono text-xs opacity-60">MONTHLY TOTAL</div>
-                                <div id="mt-ma" class="text-4xl font-black text-[#00ff9d]">0</div>
-                                <div id="mt-kiosk" class="text-4xl font-black text-[#00ff9d]">0</div>
+                            
+                            <div class="grid grid-cols-2 p-6 items-center bg-white/5">
+                                <div class="mono text-xs opacity-60">MONTHLY DAILY AVG</div>
+                                <div id="mt-ma" class="text-5xl font-black text-[#00ff9d] text-right pr-6">0</div>
                             </div>
-                            <div class="grid grid-cols-3 p-8 items-center">
-                                <div class="mono text-xs opacity-60">RESOLVED</div>
-                                <div id="res-ma" class="text-4xl font-black opacity-30">0</div>
-                                <div id="res-kiosk" class="text-4xl font-black opacity-30">0</div>
+                            
+                            <div class="grid grid-cols-2 p-6 items-center">
+                                <div class="mono text-xs opacity-60">TOTAL RESOLVED</div>
+                                <div id="res-ma" class="text-5xl font-black opacity-30 text-right pr-6">0</div>
                             </div>
                         </div>
                     </div>
-                    <div class="p-4 bg-white/5 text-[9px] mono text-center opacity-40">
-                        LAST_REFRESH: <span id="summary-date-display"></span> | CONSUMER CARE ASSOCIATE
+                </div>
+
+                <div class="terminal-box max-w-4xl">
+                    <div class="terminal-header flex justify-between items-center">
+                        <span class="text-[10px] mono text-[#00ff9d]">TICKETS FOR THE DAY</span>
+                        <span id="today-total-tag" class="text-[9px] opacity-50 mono">0 TOTAL</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px] mono">
+                            <thead>
+                                <tr class="bg-white/5 opacity-50 border-b border-white/5">
+                                    <th class="p-4">ID</th>
+                                    <th class="p-4">NAME</th>
+                                    <th class="p-4">TYPE</th>
+                                    <th class="p-4">BRANCH</th>
+                                    <th class="p-4 text-right">STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summary-daily-list" class="divide-y divide-white/5">
+                                </tbody>
+                        </table>
+                        <div id="summary-empty-msg" class="hidden p-12 text-center opacity-20 mono text-xs">
+                            NO_TICKETS_ENCODED_TODAY
+                        </div>
+                    </div>
+                    <div class="p-4 bg-white/5 text-[9px] mono text-center opacity-40 border-t border-white/5">
+                        SYNC_TIME: <span id="summary-date-display"></span> | AGRIBANK CONSUMER CARE
                     </div>
                 </div>
             </section>
@@ -337,10 +374,13 @@
                 <div class="terminal-box">
                     <div class="card-header justify-between">
                         <div class="header-title uppercase font-bold text-[#2dd4bf]">Agribank Pay Kiosk</div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-4">
                             <span class="text-[9px] mono opacity-40">SEARCH:</span>
                             <input type="text" id="searchInput" class="search-box p-2" placeholder="NAME OR TERMINAL #" onkeyup="filterTable()">
                             <button class="btn-cyber !py-1 !px-3 rounded-full text-[10px]" onclick="loadKioskData()">REFRESH</button>
+                            <div class="text-[10px] mono opacity-50 whitespace-nowrap">
+                                ACTIVE KIOSK: <span id="kiosk-count" class="text-[#00ff9d] font-bold text-xs">00</span>
+                            </div>
                         </div>
                     </div>
                     <div class="p-0">
