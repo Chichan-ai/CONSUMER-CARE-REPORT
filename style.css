@@ -47,7 +47,7 @@ body {
     background-image: 
         radial-gradient(circle at 10% 10%, var(--grad-color), transparent 55%),
         radial-gradient(circle at 90% 90%, var(--grad-color), transparent 55%),
-        url('C:/Users/Lenovo/OneDrive - AGRIBUSINESS RURAL BANK INC/Desktop/PRIVATE FILES/Getting Started/agribankonline assets/agribankbg.png');
+        url('agribankbg.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
