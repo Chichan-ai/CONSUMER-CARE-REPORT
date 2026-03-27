@@ -1,7 +1,7 @@
 'use strict';
 
 // --- CONFIGURATION ---
-const _0x4f23 = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5SXpxUXhhQzdaRDY5RXJvZjdEaGhBZ1pKd3dfUUFqb1pEVHlzUGl5U2pSdjhOekxnVGlicVlabGxQWmhaaWpPay9leGVj";
+const _0x4f23 = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5clZPR01UdUhleVF5M1ZHT01hX2ZZTG9OeU1iaDBXUDRIVFlNbnRVcmlid3ltOE9sLXp1d2VLS04xWElpWk0tcU4vZXhlYw==";
 const SCRIPT_URL = atob(_0x4f23);
 const _0x4f21 = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J3VXhOSG5xVmMyaVcyTTBYUHpfWm1EdnR0UGVhMDQ2WjNmS3EycmRyc281TXV5ZHJDTHFOdDRROEZYRWZoSW9sb2kvZXhlYwo=";
 const KIOSK_URL =atob(_0x4f21);
@@ -267,7 +267,8 @@ async function loadData() {
 async function loadKioskData() {
     const table = document.getElementById('kioskTable'),
           loader = document.getElementById('loader'),
-          tbody = document.getElementById('tableBody');
+          tbody = document.getElementById('tableBody'),
+          countDisplay = document.getElementById('kiosk-count'); // The element for the number
 
     if (!tbody) return;
     loader.style.display = 'block';
@@ -278,9 +279,23 @@ async function loadKioskData() {
         const result = await response.json();
         
         tbody.innerHTML = '';
+        
+        // 1. Initialize the counter
+        let activeCount = 0;
+
         result.kiosks.forEach(k => {
             const statusStr = (k.Status || 'Offline').toUpperCase();
-            const statusColor = statusStr === 'ONLINE' ? 'status-online' : 'status-offline';
+            
+            let statusColor = 'status-offline'; 
+            
+            // 2. Increment counter if Active
+            if (statusStr === 'ACTIVE') {
+                statusColor = 'status-active';
+                activeCount++; 
+            } else {
+                statusColor = 'status-inactive';
+            }
+
             const cleanDate = k.GoLive ? k.GoLive.split('T')[0] : '---';
 
             tbody.innerHTML += `
@@ -292,6 +307,12 @@ async function loadKioskData() {
                     <td class="text-end status-tag ${statusColor}">[${statusStr}]</td>
                 </tr>`;
         });
+
+        // 3. Update the display with the final count
+        if (countDisplay) {
+            countDisplay.innerText = activeCount;
+        }
+
         loader.style.display = 'none';
         table.style.display = 'table';
     } catch (e) {
@@ -520,22 +541,81 @@ function filterTable() {
 
 function updateSummary(tickets) {
     const now = new Date();
-    const todayStr = now.toLocaleDateString();
-    const currentMonth = now.getMonth();
+    // Format "today" as a string matching your sheet: YYYY-MM-DD
+    const todayStr = now.toISOString().split('T')[0]; 
+    const currentMonth = now.getMonth() + 1; // JS months are 0-11
     const currentYear = now.getFullYear();
-    const daysPassed = now.getDate();
-
-    const todayTickets = tickets.filter(t => new Date(t.DateIssued).toLocaleDateString() === todayStr);
+    
+    // 1. FILTER: Monthly Tickets (Based strictly on the date string)
     const monthlyTickets = tickets.filter(t => {
-        const d = new Date(t.DateIssued);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        if (!t.DateIssued) return false;
+        // Extract YYYY and MM from "YYYY-MM-DD..."
+        const parts = t.DateIssued.split('-');
+        const itemYear = parseInt(parts[0]);
+        const itemMonth = parseInt(parts[1]);
+        
+        return itemYear === currentYear && itemMonth === currentMonth;
     });
 
-    const mobileTickets = monthlyTickets.filter(t => (t.Type || "").toString().toUpperCase().includes("MOBILE APP"));
+    // 2. FILTER: Today's Tickets (The 3 tickets)
+    // Matches the YYYY-MM-DD prefix exactly
+    const todayTickets = monthlyTickets.filter(t => {
+        return t.DateIssued.startsWith(todayStr);
+    });
 
-    if (document.getElementById('stat-daily-avg')) document.getElementById('stat-daily-avg').innerText = todayTickets.length;
-    if (document.getElementById('stat-monthly-total')) document.getElementById('stat-monthly-total').innerText = monthlyTickets.length;
-    if (document.getElementById('stat-mobile-avg')) document.getElementById('stat-mobile-avg').innerText = (mobileTickets.length / daysPassed).toFixed(1);
+    // 3. CALCULATION LOGIC
+    const daysPassed = now.getDate(); 
+
+    // Total Resolved (Trims spaces to catch all 92)
+    const resolvedCount = monthlyTickets.filter(t => {
+        const status = (t.Status || "").toString().trim().toUpperCase();
+        return status === "RESOLVED";
+    }).length;
+
+    const avgDaily = Math.round(monthlyTickets.length / daysPassed) || 0;
+
+    // 4. UI UPDATES
+    const updateEl = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val;
+    };
+
+    updateEl('global-monthly-total', monthlyTickets.length.toString().padStart(3, '0'));
+    updateEl('ftd-ma', todayTickets.length); // Should now show 3
+    updateEl('mt-ma', avgDaily);
+    updateEl('res-ma', resolvedCount);      // Should now show 92
+    
+    updateEl('today-total-tag', `${todayTickets.length} TOTAL`);
+
+    // 5. RENDER DAILY LIST
+    const listBody = document.getElementById('summary-daily-list');
+    const emptyMsg = document.getElementById('summary-empty-msg');
+    
+    if (listBody) {
+        if (todayTickets.length === 0) {
+            listBody.innerHTML = '';
+            emptyMsg?.classList.remove('hidden');
+        } else {
+            emptyMsg?.classList.add('hidden');
+            listBody.innerHTML = todayTickets.slice().reverse().map(t => {
+                const status = (t.Status || "").toString().trim().toUpperCase();
+                const isResolved = status === "RESOLVED";
+                return `
+                    <tr class="hover:bg-white/5 transition border-b border-white/5 last:border-0">
+                        <td class="p-4 text-slate-500">#${t.TicketNo}</td>
+                        <td class="p-4 font-bold uppercase tracking-tighter text-slate-200">${t.Name || '---'}</td>
+                        <td class="p-4 opacity-70">${t.Type || '---'}</td>
+                        <td class="p-4 opacity-70">${t.Branch || '---'}</td>
+                        <td class="p-4 text-right font-bold ${isResolved ? 'text-[#00ff9d]' : 'text-orange-500/50'}">
+                            [${status || "PENDING"}]
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+    }
+
+    const dateDisplay = document.getElementById('summary-date-display');
+    if (dateDisplay) dateDisplay.innerText = now.toLocaleString();
 }
 
 function getCriticality(concernText) {
@@ -819,3 +899,4 @@ if (hour < 5 || hour >= 23) {
   document.body.style.filter = "contrast(1.05)";
   addLog("NIGHT_SHIFT_MODE_ACTIVE");
 }
+
