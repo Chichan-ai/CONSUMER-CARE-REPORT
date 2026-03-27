@@ -1,7 +1,7 @@
 'use strict';
 
 // --- CONFIGURATION ---
-const _0x4f23 = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J3RHU2TlpwelFraGdtdGtxOW83UFNJTXdnemdTcl94ckdFQXVYX0JkaGluUmNobFhXblViZDNCNENjRUhneWNvN20vZXhlYw==";
+const _0x4f23 = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5SXpxUXhhQzdaRDY5RXJvZjdEaGhBZ1pKd3dfUUFqb1pEVHlzUGl5U2pSdjhOekxnVGlicVlabGxQWmhaaWpPay9leGVj";
 const SCRIPT_URL = atob(_0x4f23);
 const _0x4f21 = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J3VXhOSG5xVmMyaVcyTTBYUHpfWm1EdnR0UGVhMDQ2WjNmS3EycmRyc281TXV5ZHJDTHFOdDRROEZYRWZoSW9sb2kvZXhlYwo=";
 const KIOSK_URL =atob(_0x4f21);
@@ -107,6 +107,41 @@ async function handleLogin() {
         btn.innerText = "INITIALIZE SESSION";
         btn.disabled = false;
     }
+    // Inside handleLogin after success
+    localStorage.setItem('username', user); // Save the name
+    checkAdminAccess(); // Instantly show the button
+    showPage('dashboard');
+}
+window.onload = function() {
+    // ... your existing init code ...
+    checkAdminAccess(); 
+    
+    // Optional: If they aren't admin but try to stay on admin page, boot them
+    const activePage = localStorage.getItem('activePage');
+    if (activePage === 'admin' && !document.getElementById('nav-admin').classList.contains('hidden')) {
+        // Allow
+    } else if (activePage === 'admin') {
+        showPage('dashboard'); // Redirect to safety
+    }
+};
+
+function checkAdminAccess() {
+    const navAdmin = document.getElementById('nav-admin');
+    if (!navAdmin) return;
+
+    // Get the logged-in user and clean it
+    const currentUser = (localStorage.getItem('username') || "").trim().toUpperCase();
+
+    // Logic: Is it 'CHRISTIAN' or does it contain 'ADMIN'?
+    const isAdmin = currentUser === 'CHRISTIAN' || currentUser.includes('ADMIN');
+
+    if (isAdmin) {
+        navAdmin.classList.remove('hidden');
+        console.log("ADMIN_ACCESS_GRANTED: Welcome " + currentUser);
+    } else {
+        navAdmin.classList.add('hidden');
+        console.log("RESTRICTED_ACCESS: Admin panel hidden for " + currentUser);
+    }
 }
 
 function checkSession() {
@@ -118,7 +153,7 @@ function checkSession() {
         const fiveMinutes = 5 * 60 * 1000; // 5 minutes timeout session
 
         if (currentTime - loginTime > fiveMinutes) {
-            alert("SESSION EXPIRED: Session limit reached (1 min).");
+            alert("SESSION EXPIRED.");
             forceLogout();
         }
     }
@@ -157,16 +192,47 @@ function toggleTheme() {
 }
 
 function showPage(page) {
+    // 1. Save the state
     localStorage.setItem('activePage', page);
+
+    // 2. Handle Page Visibility & Navigation Active States
     ['dashboard', 'summary', 'report', 'kiosk', 'admin'].forEach(p => {
         const pageEl = document.getElementById(`page-${p}`);
         const navEl = document.getElementById(`nav-${p}`);
-        if (pageEl) pageEl.classList.toggle('hidden', p !== page);
-        if (navEl) navEl.classList.toggle('active', p === page);
+        
+        if (pageEl) {
+            // If p matches the clicked page, remove hidden. Otherwise, add it.
+            pageEl.classList.toggle('hidden', p !== page);
+        }
+        
+        if (navEl) {
+            // Highlight the active button in your sidebar/nav
+            navEl.classList.toggle('active', p === page);
+        }
     });
 
-    if (page === 'report') updateDateInput();
+    // 3. Trigger Page-Specific Actions
+    
+    // Logic for Report Page
+    if (page === 'report') {
+        if (typeof updateDateInput === 'function') updateDateInput();
+    }
+
+    // --- THE FIX: AUTO-LOAD ADMIN TABLE ---
+    // If the user clicks 'admin', we fetch the user list immediately
+    if (page === 'admin') {
+        console.log("ADMIN_PANEL_OPENED: Triggering User Sync...");
+        renderUserTable(); 
+    }
 }
+
+// Refresh the user list every 5 minutes automatically
+setInterval(() => {
+    const adminPage = document.getElementById('page-admin');
+    if (adminPage && !adminPage.classList.contains('hidden')) {
+        renderUserTable();
+    }
+}, 300000);
 
 function openFilteredSheet() {
     window.open("https://docs.google.com/spreadsheets/d/1mDv4lzB3qDy_e9OQ0mG6YA_49kPJ1Q53SCC1lGSy6Fs/edit", '_blank');
@@ -502,7 +568,7 @@ document.addEventListener('keypress', function (e) {
         handleLogin();
     }
 });
-// --- ADMIN CORE LOGIC ---
+// --- 1. ADMIN CORE LOGIC ---
 
 function toggleTokenVisibility() {
     const input = document.getElementById('admin-token-input');
@@ -521,128 +587,41 @@ function addLog(message) {
     logContainer.prepend(logEntry); 
 }
 
-// Automatically log important events by wrapping existing functions
-const originalLoadData = loadData;
-loadData = async function() {
-    addLog("FETCHING_TICKET_DATA...");
-    await originalLoadData();
-    addLog("TICKET_SYNC_COMPLETE");
-};
-
-const originalLoadKiosk = loadKioskData;
-loadKioskData = async function() {
-    addLog("SCANNING_KIOSK_STATUS...");
-    await originalLoadKiosk();
-    addLog("KIOSK_SCAN_SUCCESSFUL");
-};
-
-// --- USER MANAGEMENT CORE ---
-
-async function renderUserTable() {
-    const tableBody = document.getElementById('user-list-table');
-    if (!tableBody) return;
-
-    try {
-        addLog("SYNCING_USER_DATABASE...");
-        // Ensure we are hitting the correct endpoint with the 'users' type
-        const response = await fetch(`${SCRIPT_URL}?token=${SECRET_TOKEN}&type=users`);
-        const data = await response.json(); // Fixed the 'data is undefined' error
-        
-        const users = Array.isArray(data) ? data : (data.users || []);
-
-        if (users.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 opacity-50">NO USERS FOUND</td></tr>';
-            return;
-        }
-
-        tableBody.innerHTML = users.map(user => {
-            const usernameClean = user.username ? user.username.trim().toLowerCase() : "unknown";
-            const currentStatus = (user.status || 'ACTIVE').toString().toUpperCase();
-            
-            // Visual Role Detection logic
-            const isAdmin = usernameClean.includes('admin') || usernameClean === 'christian';
-            const roleLabel = isAdmin ? 'ADMIN' : 'ENCODER';
-            const roleClass = isAdmin 
-                ? 'bg-purple-500/20 text-purple-400 border-purple-500/50' 
-                : 'bg-blue-500/20 text-blue-400 border-blue-500/50';
-
-            const statusClass = currentStatus === 'ACTIVE' ? 'text-[#00ff9d]' : 'text-red-500';
-
-            return `
-            <tr class="border-b border-white/5 hover:bg-white/10 transition group">
-                <td class="py-3 font-bold uppercase tracking-tighter ${isAdmin ? 'text-purple-400' : 'text-slate-200'}">
-                    ${user.username}
-                </td>
-                <td class="py-3">
-                    <span class="px-2 py-0.5 rounded text-[10px] border ${roleClass}">
-                        ${roleLabel}
-                    </span>
-                </td>
-                <td class="py-3 text-slate-500 text-xs uppercase font-mono">${user.branch || 'N/A'}</td>
-                <td class="py-3 ${statusClass} font-mono text-xs font-bold">
-                    [${currentStatus}]
-                </td>
-                <td class="py-3 text-right">
-                    <button onclick="toggleUserStatusRemote('${user.username}', '${currentStatus}')" 
-                            class="text-[10px] text-blue-400 hover:bg-blue-400 hover:text-black border border-blue-400/30 px-3 py-1 rounded-sm transition-all uppercase font-bold">
-                        TOGGLE_STATUS
-                    </button>
-                </td>
-            </tr>`;
-        }).join('');
-        
-        addLog("USER_SYNC_SUCCESS");
-
-    } catch (e) {
-        console.error("User Fetch Error:", e);
-        addLog("CRITICAL: USER_DATABASE_UNREACHABLE");
-        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-500">FAILED TO LOAD USERS</td></tr>';
+// Safer Function Wrapper: This waits until the functions exist before wrapping them
+window.addEventListener('DOMContentLoaded', () => {
+    if (typeof loadData === 'function') {
+        const originalLoadData = loadData;
+        window.loadData = async function() {
+            addLog("FETCHING_TICKET_DATA...");
+            await originalLoadData();
+            addLog("TICKET_SYNC_COMPLETE");
+        };
     }
-}
-
-// --- REMOTE STATUS TOGGLE ---
-async function toggleUserStatusRemote(username, currentStatus) {
-    // Logic: If active, make inactive. If anything else (INACTIVE/ERROR), make active.
-    const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     
-    addLog(`REQUESTING_STATUS_CHANGE: ${username} -> ${newStatus}`);
-
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({
-                action: "updateUserStatus",
-                username: username,
-                newStatus: newStatus,
-                token: SECRET_TOKEN
-            })
-        });
-
-        const result = await response.json();
-
-        if (result.status === "success") {
-            addLog(`SUCCESS: ${username} UPDATED`);
-            renderUserTable(); // Refresh the table
-        } else {
-            throw new Error(result.message || "Unknown error");
-        }
-
-    } catch (e) {
-        addLog("ERROR: STATUS_UPDATE_FAILED");
-        console.error("Transmission Error:", e);
-        alert("SYNC ERROR: Status could not be updated in the database.");
+    if (typeof loadKioskData === 'function') {
+        const originalLoadKiosk = loadKioskData;
+        window.loadKioskData = async function() {
+            addLog("SCANNING_KIOSK_STATUS...");
+            await originalLoadKiosk();
+            addLog("KIOSK_SCAN_SUCCESSFUL");
+        };
     }
-}
+});
 
-// --- ADD NEW USER MODAL ---
+// --- 2. USER MANAGEMENT DATA ---
+let cachedUsers = []; 
+
 async function openAddUserModal() {
-    const user = prompt("NEW USERNAME:");
-    if (!user) return;
+    const userInput = prompt("NEW USERNAME:");
+    if (!userInput) return;
+    
+    const user = userInput.trim().toUpperCase(); 
     const pass = prompt("ASSIGN PASSWORD:");
     if (!pass) return;
-    const branch = prompt("ASSIGN BRANCH (e.g. PASIG, MALABON):") || "GENERAL";
+    
+    const branch = (prompt("ASSIGN BRANCH (e.g. PASIG, MALABON):") || "GENERAL").trim().toUpperCase();
 
-    addLog(`POSTING_NEW_USER: ${user.toUpperCase()}...`);
+    addLog(`POSTING_NEW_USER: ${user}...`);
 
     try {
         const response = await fetch(SCRIPT_URL, {
@@ -651,24 +630,100 @@ async function openAddUserModal() {
                 action: "createUser",
                 username: user,
                 password: pass,
-                branch: branch.toUpperCase(),
+                branch: branch,
                 token: SECRET_TOKEN
             })
         });
 
         const result = await response.json();
-        
         if (result.status === "success") {
-            addLog(`DATABASE_RECORD_CREATED: ${user.toUpperCase()}`);
+            addLog(`DATABASE_RECORD_CREATED: ${user}`);
             alert(`USER ${user} ADDED SUCCESSFULLY`);
             renderUserTable(); 
         } else {
             throw new Error(result.message);
         }
-
     } catch (e) {
         addLog("ERROR: FAILED_TO_CREATE_USER");
-        console.error("Transmission Error:", e);
-        alert("TRANSMISSION ERROR: Check connection to Google Sheets.");
+        alert("TRANSMISSION ERROR: Check connection.");
     }
+}
+
+async function renderUserTable() {
+    const tableBody = document.getElementById('user-list-table');
+    const countDisplay = document.getElementById('user-count');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 animate-pulse opacity-50 font-mono text-xs">INITIALIZING_SYNC...</td></tr>';
+
+    try {
+        addLog("<span class='animate-pulse text-[#00ff9d]'>●</span> SYNCING_LIVE_DATABASE...");
+        
+        const response = await fetch(`${SCRIPT_URL}?token=${SECRET_TOKEN}&type=users`);
+        const data = await response.json(); 
+        
+        const allUsers = Array.isArray(data) ? data : (data.users || []);
+        cachedUsers = allUsers.filter(u => u.username && u.username.toString().trim() !== "");
+
+        if (countDisplay) {
+            countDisplay.innerText = cachedUsers.length.toString().padStart(2, '0');
+        }
+
+        displayUsers(cachedUsers);
+        addLog("USER_SYNC_SUCCESS");
+    } catch (e) {
+        addLog("CRITICAL: USER_DATABASE_UNREACHABLE");
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-500 font-mono text-xs">CONNECTION_ERROR</td></tr>';
+    }
+}
+
+function filterUserTable() {
+    const searchInput = document.getElementById('user-search');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.toUpperCase();
+    const filtered = cachedUsers.filter(user => {
+        const name = (user.username || "").toString().toUpperCase();
+        const branch = (user.branch || "").toString().toUpperCase();
+        return name.includes(searchTerm) || branch.includes(searchTerm);
+    });
+
+    displayUsers(filtered);
+    const countDisplay = document.getElementById('user-count');
+    if (countDisplay) countDisplay.innerText = filtered.length.toString().padStart(2, '0');
+}
+
+function displayUsers(userArray) {
+    const tableBody = document.getElementById('user-list-table');
+    if (!tableBody) return;
+    
+    if (userArray.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 opacity-30 font-mono text-xs">NO_MATCHING_RECORDS</td></tr>';
+        return;
+    }
+
+    tableBody.innerHTML = userArray.map(user => {
+        const displayUser = (user.username || "UNKNOWN").toString().trim().toUpperCase();
+        const currentStatus = (user.status || 'ACTIVE').toString().toUpperCase();
+        const branchName = (user.branch || 'N/A').toString().toUpperCase();
+        
+        const isAdmin = displayUser.includes('ADMIN') || displayUser === 'CHRISTIAN';
+        const roleLabel = isAdmin ? 'ADMIN' : 'ENCODER';
+        const roleClass = isAdmin ? 'bg-purple-500/20 text-purple-400 border-purple-500/50' : 'bg-blue-500/20 text-blue-400 border-blue-500/50';
+        const statusClass = currentStatus === 'ACTIVE' ? 'text-[#00ff9d]' : 'text-red-500';
+
+        return `
+        <tr class="border-b border-white/5 hover:bg-white/10 transition group font-mono text-[11px]">
+            <td class="py-3 font-bold tracking-tighter ${isAdmin ? 'text-purple-400' : 'text-slate-200'}">${displayUser}</td>
+            <td class="py-3"><span class="px-2 py-0.5 rounded text-[9px] border ${roleClass}">${roleLabel}</span></td>
+            <td class="py-3 text-slate-500 uppercase">${branchName}</td>
+            <td class="py-3 ${statusClass} font-bold">[${currentStatus}]</td>
+            <td class="py-3 text-right">
+                <button onclick="toggleUserStatusRemote('${displayUser}', '${currentStatus}')" 
+                        class="text-[9px] text-blue-400 hover:bg-blue-400 hover:text-black border border-blue-400/30 px-3 py-1 rounded-sm transition-all font-bold uppercase">
+                    TOGGLE
+                </button>
+            </td>
+        </tr>`;
+    }).join('');
 }
