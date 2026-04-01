@@ -56,16 +56,50 @@
                 <p class="text-[9px] mono opacity-50 mt-1">DIGITAL BANKING</p>
             </div>
             
-            <nav class="flex-1 p-4 space-y-2">
-                <button onclick="showPage('dashboard')" id="nav-dashboard" class="sidebar-link active w-full text-left p-3 rounded mono text-s">DASHBOARD</button>
-                <button onclick="showPage('summary')" id="nav-summary" class="sidebar-link w-full text-left p-3 rounded mono text-s">SUMMARY REPORT</button>
-                <button onclick="showPage('report')" id="nav-report" class="sidebar-link w-full text-left p-3 rounded mono text-s">NEW ENTRY</button>
-                <button onclick="showPage('kiosk')" id="nav-kiosk" class="sidebar-link w-full text-left p-3 rounded mono text-s">AGRIBANK PAY KIOSK</button>
-                <button id="nav-admin" onclick="showPage('admin')" class="hidden w-full text-left p-3 rounded mono text-s">
-                    ADMIN
+           <nav class="flex-1 p-4 space-y-2">
+               <button onclick="showPage('dashboard')" id="nav-dashboard" class="sidebar-link active w-full text-left p-3 rounded mono text-s flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    DASHBOARD
+                </button>
+                <button onclick="showPage('summary')" id="nav-summary" class="sidebar-link w-full text-left p-3 rounded mono text-s flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                    <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+                </svg>
+                SUMMARY REPORT
+                </button>
+
+                <button onclick="showPage('report')" id="nav-report" class="sidebar-link w-full text-left p-3 rounded mono text-s flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                NEW ENTRY
+                </button>
+
+                <button onclick="showPage('kiosk')" id="nav-kiosk" class="sidebar-link w-full text-left p-3 rounded mono text-s flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                    <rect x="8" y="6" width="8" height="8"></rect>
+                </svg>
+                AGRIBANK PAY KIOSK
+                </button>
+
+                <button id="nav-admin" onclick="showPage('admin')" class="hidden w-full text-left p-3 rounded mono text-s flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                ADMIN
                 </button>
             </nav>
-
+            
             <div class="p-4 border-t border-white/5 space-y-3">
                 <button onclick="toggleTheme()" class="w-full p-2 rounded border border-white-500/30 text-white-500 text-[10px] mono flex items-center justify-center gap-2 hover:bg-white-500/10 transition-colors uppercase">
                     <span id="theme-icon">🌙</span> LIGHT/DARK
@@ -158,8 +192,8 @@
             <section id="page-summary" class="hidden space-y-6">
                 <div class="flex justify-between items-end border-b border-white/10 pb-4">
                     <div class="space-y-1">
-                        <h1 class="text-3xl font-black italic tracking-tighter text-white">CS SUMMARY</h1>
-                        <div class="text-[9px] mono opacity-30 uppercase tracking-widest text-white/50">Performance Dashboard</div>
+                        <h1 class="text-3xl font-black italic tracking-tighter">CS SUMMARY</h1>
+                        <p class="text-s font-black tracking-tighter">Performance Dashboard</p>
                     </div>
                 </div>
 
@@ -421,10 +455,10 @@
                             </div>
                             <div class="pt-2 grid grid-cols-2 gap-2">
                                 <button onclick="renderUserTable()" class="btn-cyber !py-2 !text-[10px]">
-                                    SYNC_DATABASE
+                                    REFRESH
                                 </button>
                                 <button onclick="forceLogout()" class="btn-cyber !py-2 !text-[10px] !bg-red-500 !shadow-[0_0_14px_rgba(239,68,68,0.25)]">
-                                    TERMINATE_SESSION
+                                    LOGOUT
                                 </button>
                             </div>
                         </div>
@@ -436,7 +470,7 @@
                                 <div class="dot"></div>
                                 <span class="text-[10px] mono opacity-50 ml-2">EVENT LOG STREAM</span>
                             </div>
-                            <button onclick="document.getElementById('admin-logs').innerHTML = ''" class="text-[9px] mono opacity-40 hover:opacity-100 hover:text-red-400">[CLEAR_LOGS]</button>
+                            <button onclick="document.getElementById('admin-logs').innerHTML = ''" class="text-[9px] mono opacity-40 hover:opacity-100 hover:text-red-400">[CLEAR LOGS]</button>
                         </div>
                         <div class="p-4">
                             <div id="admin-logs" class="h-32 overflow-y-auto text-[10px] space-y-1 text-slate-500 mono">
